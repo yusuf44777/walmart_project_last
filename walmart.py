@@ -570,19 +570,8 @@ if os.path.exists("training_data.json"):
         </div>
         """, unsafe_allow_html=True)
         
-        # Export buttons
-        col1, col2 = st.sidebar.columns(2)
-        with col1:
-            if st.button("📋 JSONL Export", help="OpenAI fine-tuning formatı"):
-                exported_file = export_training_data_for_finetuning("jsonl")
-                if exported_file:
-                    st.sidebar.success(f"✅ {exported_file} oluşturuldu!")
-        
-        with col2:
-            if st.button("📊 CSV Export", help="Veri analizi için CSV"):
-                exported_file = export_training_data_for_finetuning("csv")
-                if exported_file:
-                    st.sidebar.success(f"✅ {exported_file} oluşturuldu!")
+        # Export buttons bölümünü geçici olarak kaldırıyoruz
+        st.sidebar.info("Export fonksiyonları yakında eklenecek")
         
         # Training data clear button
         if st.sidebar.button("🗑️ Veriyi Temizle", help="Tüm training data'yı sil"):
@@ -766,12 +755,6 @@ def export_training_data_for_finetuning(format_type="jsonl"):
     except Exception as e:
         st.error(f"Export işlemi sırasında hata: {str(e)}")
         return None
-        with open("training_data.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        
-        st.sidebar.success(f"✅ Veri kaydedildi! Toplam: {len(data)} örnek")
-    except Exception as e:
-        st.sidebar.error(f"Veri kaydetme hatası: {str(e)}")
 
 def get_ai_response(prompt, selected_model, api_key):
     """Tüm AI modellerinden yanıt al"""
@@ -1170,7 +1153,7 @@ st.markdown("""
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 2rem 0;">
             <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px);">
                 <h4 style="color: #e6f3ff; margin-bottom: 1rem; font-weight: 600;">🤖 AI Teknolojisi</h4>
-                <p style="color: #b3d9ff; margin: 0; font-size: 1.1rem;">{}</p>
+                <p style="color: #b3d9ff; margin: 0; font-size: 1.1rem;">{0}</p>
                 <div style="margin-top: 1rem; font-size: 0.9rem; color: #cce7ff;">
                     <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 15px;">Güvenilir & Hızlı</span>
                 </div>
@@ -1195,7 +1178,7 @@ st.markdown("""
         
         <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.3);">
             <p style="color: #b3d9ff; margin: 0; font-size: 1.1rem;">
-                🔧 <strong>Geliştirici Notu:</strong> Bu araç <strong style="color: #e6f3ff;">{}</strong> kullanarak Walmart için optimize edilmiş ürün içeriği oluşturur.
+                🔧 <strong>Geliştirici Notu:</strong> Bu araç <strong style="color: #e6f3ff;">{0}</strong> kullanarak Walmart için optimize edilmiş ürün içeriği oluşturur.
             </p>
             <p style="color: #cce7ff; margin: 1rem 0 0 0; font-size: 0.9rem;">
                 © 2025 - Walmart İçerik Üreteci | Güvenli & Hızlı AI Çözümü
@@ -1206,18 +1189,18 @@ st.markdown("""
 
 <script>
     // Footer animation
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {{
         const footer = document.querySelector('div[style*="background: linear-gradient(135deg, #0071ce 0%, #004c91 100%)"]');
-        if (footer) {
+        if (footer) {{
             footer.style.opacity = '0';
             footer.style.transform = 'translateY(50px)';
             footer.style.transition = 'all 0.8s ease-out';
             
-            setTimeout(() => {
+            setTimeout(() => {{
                 footer.style.opacity = '1';
                 footer.style.transform = 'translateY(0)';
-            }, 500);
-        }
-    });
+            }}, 500);
+        }}
+    }});
 </script>
-""".format(selected_model, selected_model), unsafe_allow_html=True)
+""".format(selected_model), unsafe_allow_html=True)
