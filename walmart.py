@@ -2,6 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 import openai
 import os
+import json
+import requests
+from datetime import datetime
+import pandas as pd
 
 # Sayfa konfigürasyonu
 st.set_page_config(
@@ -423,7 +427,7 @@ st.sidebar.markdown("""
 # Model selection with enhanced styling
 selected_model = st.sidebar.selectbox(
     "🤖 AI Model Seçin:",
-    ["Google Gemini", "OpenAI ChatGPT"],
+    ["Google Gemini", "OpenAI ChatGPT", "Ollama (Yerel)", "Groq (Ücretsiz)", "Together AI (Ücretsiz)"],
     help="Kullanmak istediğiniz AI modelini seçin"
 )
 
@@ -451,7 +455,7 @@ if selected_model == "Google Gemini":
         </div>
         """, unsafe_allow_html=True)
 
-else:  # OpenAI ChatGPT
+elif selected_model == "OpenAI ChatGPT":
     api_key = st.sidebar.text_input(
         "🔍 OpenAI API Key:",
         type="password",
@@ -465,20 +469,335 @@ else:  # OpenAI ChatGPT
         </div>
         """, unsafe_allow_html=True)
 
+elif selected_model == "Ollama (Yerel)":
+    st.sidebar.markdown("""
+    <div style="background: #e3f2fd; padding: 1rem; border-radius: 10px; border-left: 4px solid #2196f3; margin: 1rem 0;">
+        <p style="color: #1565c0; margin: 0; font-weight: 500;">🏠 Yerel Ollama Sunucusu</p>
+        <p style="color: #1976d2; font-size: 0.9rem; margin: 0.5rem 0 0 0;">Kurulum: curl -fsSL https://ollama.ai/install.sh | sh</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    ollama_model = st.sidebar.selectbox(
+        "Ollama Model:",
+        ["llama3.1:8b", "mistral:7b", "codellama:7b", "llama2:7b"],
+        help="Kullanılacak Ollama modelini seçin"
+    )
+    api_key = "ollama_local"
+
+elif selected_model == "Groq (Ücretsiz)":
+    api_key = st.sidebar.text_input(
+        "🔍 Groq API Key:",
+        type="password",
+        help="Groq Console'dan ücretsiz API anahtarınızı alın"
+    )
+    
+    if api_key:
+        st.sidebar.markdown("""
+        <div style="background: #d4edda; padding: 1rem; border-radius: 10px; border-left: 4px solid #28a745; margin: 1rem 0;">
+            <p style="color: #155724; margin: 0; font-weight: 500;">✅ Groq hazır! (Süper hızlı)</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+elif selected_model == "Together AI (Ücretsiz)":
+    api_key = st.sidebar.text_input(
+        "🔍 Together AI API Key:",
+        type="password",
+        help="Together AI'dan ücretsiz API anahtarınızı alın"
+    )
+    
+    if api_key:
+        st.sidebar.markdown("""
+        <div style="background: #d4edda; padding: 1rem; border-radius: 10px; border-left: 4px solid #28a745; margin: 1rem 0;">
+            <p style="color: #155724; margin: 0; font-weight: 500;">✅ Together AI hazır!</p>
+        </div>
+        """, unsafe_allow_html=True)
+
 # Enhanced help section
 st.sidebar.markdown("""
 <div style="background: linear-gradient(145deg, #fff3cd 0%, #ffeaa7 100%); padding: 1.5rem 1rem; border-radius: 15px; margin-top: 2rem;">
-    <h3 style="color: #856404; margin-bottom: 1rem; font-weight: 500;">💡 Yardım & Linkler</h3>
+    <h3 style="color: #856404; margin-bottom: 1rem; font-weight: 500;">💡 Ücretsiz API Anahtarları</h3>
     <div style="margin-bottom: 1rem;">
-        <p style="color: #856404; margin: 0.5rem 0; font-weight: 500;">🔗 API Anahtarları:</p>
+        <p style="color: #856404; margin: 0.5rem 0; font-weight: 500;">🔗 Ücretsiz Seçenekler:</p>
+        <a href="https://console.groq.com/keys" target="_blank" style="color: #0071ce; text-decoration: none; font-weight: 500;">📍 Groq API (Ücretsiz)</a><br>
+        <a href="https://api.together.xyz/settings/api-keys" target="_blank" style="color: #0071ce; text-decoration: none; font-weight: 500;">📍 Together AI ($5 ücretsiz)</a><br>
+        <a href="https://ollama.ai" target="_blank" style="color: #0071ce; text-decoration: none; font-weight: 500;">📍 Ollama (Tamamen ücretsiz)</a>
+    </div>
+    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0ad4e;">
+        <p style="color: #856404; margin: 0.5rem 0; font-weight: 500;">💸 Ücretli Seçenekler:</p>
         <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: #0071ce; text-decoration: none; font-weight: 500;">📍 Google Gemini API</a><br>
         <a href="https://platform.openai.com/api-keys" target="_blank" style="color: #0071ce; text-decoration: none; font-weight: 500;">📍 OpenAI API</a>
     </div>
     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0ad4e;">
-        <p style="color: #856404; font-size: 0.9rem; margin: 0;">🔒 API anahtarlarınız güvenli bir şekilde saklanır</p>
+        <p style="color: #856404; font-size: 0.9rem; margin: 0;">🔒 Tüm anahtarlar güvenli saklanır</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# Fine-tuning data collection
+st.sidebar.markdown("---")
+st.sidebar.markdown("""
+<div style="background: linear-gradient(145deg, #e8f5e8 0%, #c8e6c9 100%); padding: 1.5rem 1rem; border-radius: 15px; margin-top: 1rem;">
+    <h3 style="color: #2e7d32; margin-bottom: 1rem; font-weight: 500;">🎯 Fine-Tuning Veri Toplama</h3>
+    <p style="color: #388e3c; font-size: 0.9rem; margin: 0;">Her başarılı içerik üretimi Walmart modeli için eğitim verisi olarak kaydedilir.</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Data collection toggle
+collect_data = st.sidebar.checkbox("📊 Veri Toplama", value=True, help="Kendi modelinizi eğitmek için veri toplar")
+
+# Fine-tuning Management
+st.sidebar.markdown("---")
+st.sidebar.markdown("""
+<div style="background: linear-gradient(145deg, #fff3e0 0%, #ffcc80 100%); padding: 1.5rem 1rem; border-radius: 15px; margin-top: 1rem;">
+    <h3 style="color: #f57c00; margin-bottom: 1rem; font-weight: 500;">🔧 Model Eğitimi</h3>
+    <p style="color: #ef6c00; font-size: 0.9rem; margin: 0;">Toplanan veriyi model eğitimi için hazırla</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Training data stats
+if os.path.exists("training_data.json"):
+    try:
+        with open("training_data.json", "r", encoding="utf-8") as f:
+            training_data = json.load(f)
+        
+        st.sidebar.markdown(f"""
+        <div style="background: #e8f5e8; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+            <h4 style="color: #2e7d32; margin-bottom: 0.5rem;">📊 Veri İstatistikleri</h4>
+            <p style="color: #388e3c; font-size: 0.9rem; margin: 0;">
+                • Toplam örnek: <strong>{len(training_data)}</strong><br>
+                • En fazla kullanılan model: <strong>{max(set([item['model_used'] for item in training_data]), key=[item['model_used'] for item in training_data].count) if training_data else 'Yok'}</strong>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Export buttons
+        col1, col2 = st.sidebar.columns(2)
+        with col1:
+            if st.button("📋 JSONL Export", help="OpenAI fine-tuning formatı"):
+                exported_file = export_training_data_for_finetuning("jsonl")
+                if exported_file:
+                    st.sidebar.success(f"✅ {exported_file} oluşturuldu!")
+        
+        with col2:
+            if st.button("📊 CSV Export", help="Veri analizi için CSV"):
+                exported_file = export_training_data_for_finetuning("csv")
+                if exported_file:
+                    st.sidebar.success(f"✅ {exported_file} oluşturuldu!")
+        
+        # Training data clear button
+        if st.sidebar.button("🗑️ Veriyi Temizle", help="Tüm training data'yı sil"):
+            if os.path.exists("training_data.json"):
+                os.remove("training_data.json")
+                st.sidebar.success("✅ Training data temizlendi!")
+                st.rerun()
+    except Exception as e:
+        st.sidebar.error(f"Veri okuma hatası: {str(e)}")
+else:
+    st.sidebar.markdown("""
+    <div style="background: #f5f5f5; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+        <p style="color: #666; font-size: 0.9rem; margin: 0;">
+            Henüz training data yok. İçerik üretmeye başlayın!
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# AI Model Functions
+def call_ollama_api(prompt, model="llama3.1:8b"):
+    """Ollama API çağrısı"""
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": model,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        return response.json()["response"]
+    except Exception as e:
+        st.error(f"Ollama bağlantı hatası: {str(e)}")
+        st.info("Ollama kurulumu: `curl -fsSL https://ollama.ai/install.sh | sh`")
+        return None
+
+def call_groq_api(prompt, api_key):
+    """Groq API çağrısı"""
+    try:
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers,
+            json={
+                "model": "llama-3.1-8b-instant",
+                "messages": [
+                    {"role": "system", "content": "You are a professional content writer for Walmart.com product listings."},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 2000,
+                "temperature": 0.7
+            }
+        )
+        return response.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        st.error(f"Groq API hatası: {str(e)}")
+        return None
+
+def call_together_api(prompt, api_key):
+    """Together AI API çağrısı"""
+    try:
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post(
+            "https://api.together.xyz/v1/chat/completions",
+            headers=headers,
+            json={
+                "model": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+                "messages": [
+                    {"role": "system", "content": "You are a professional content writer for Walmart.com product listings."},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 2000,
+                "temperature": 0.7
+            }
+        )
+        return response.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        st.error(f"Together AI API hatası: {str(e)}")
+        return None
+
+def save_training_data(product_name, product_features, title, key_features, description, model_used):
+    """Fine-tuning için veri kaydet"""
+    if not collect_data:
+        return
+    
+    training_sample = {
+        "timestamp": datetime.now().isoformat(),
+        "input": {
+            "product_name": product_name,
+            "product_features": product_features
+        },
+        "output": {
+            "title": title,
+            "key_features": key_features,
+            "description": description
+        },
+        "model_used": model_used,
+        "prompt_template": "walmart_product_content"
+    }
+    
+    # JSON dosyasına kaydet
+    try:
+        # Dosya varsa oku, yoksa yeni liste oluştur
+        try:
+            with open("training_data.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            data = []
+        
+        # Yeni veriyi ekle
+        data.append(training_sample)
+        
+        # Dosyaya yaz
+        with open("training_data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+            
+        # Kullanıcıya bilgi ver
+        st.success(f"✅ Training data kaydedildi! Toplam {len(data)} örnek")
+        
+    except Exception as e:
+        st.error(f"Training data kaydedilirken hata: {str(e)}")
+
+def export_training_data_for_finetuning(format_type="jsonl"):
+    """Training data'yı fine-tuning formatına çevir"""
+    try:
+        if not os.path.exists("training_data.json"):
+            st.warning("Henüz training data yok!")
+            return None
+            
+        with open("training_data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        
+        if format_type == "jsonl":
+            # OpenAI fine-tuning formatı
+            formatted_data = []
+            for item in data:
+                # System message + user input + assistant response formatı
+                formatted_item = {
+                    "messages": [
+                        {"role": "system", "content": "Sen Walmart.com için profesyonel ürün açıklaması yazan bir içerik uzmanısın. Türkçe olarak etkili, SEO dostu ve satış odaklı ürün açıklamaları oluşturuyorsun."},
+                        {"role": "user", "content": f"Bu ürün için Walmart.com'a uygun bir ürün açıklaması oluştur:\n\nÜrün Adı: {item['input']['product_name']}\nÜrün Özellikleri: {item['input']['product_features']}"},
+                        {"role": "assistant", "content": f"Başlık: {item['output']['title']}\n\nAnahtar Özellikler: {item['output']['key_features']}\n\nÜrün Açıklaması: {item['output']['description']}"}
+                    ]
+                }
+                formatted_data.append(formatted_item)
+            
+            # JSONL formatında kaydet
+            with open("walmart_finetuning_data.jsonl", "w", encoding="utf-8") as f:
+                for item in formatted_data:
+                    f.write(json.dumps(item, ensure_ascii=False) + "\n")
+                    
+            return "walmart_finetuning_data.jsonl"
+            
+        elif format_type == "csv":
+            # CSV formatında kaydet
+            csv_data = []
+            for item in data:
+                csv_row = {
+                    "timestamp": item["timestamp"],
+                    "product_name": item["input"]["product_name"],
+                    "product_features": item["input"]["product_features"],
+                    "title": item["output"]["title"],
+                    "key_features": item["output"]["key_features"],
+                    "description": item["output"]["description"],
+                    "model_used": item["model_used"]
+                }
+                csv_data.append(csv_row)
+            
+            df = pd.DataFrame(csv_data)
+            df.to_csv("walmart_training_data.csv", index=False, encoding="utf-8")
+            return "walmart_training_data.csv"
+            
+    except Exception as e:
+        st.error(f"Export işlemi sırasında hata: {str(e)}")
+        return None
+        with open("training_data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        st.sidebar.success(f"✅ Veri kaydedildi! Toplam: {len(data)} örnek")
+    except Exception as e:
+        st.sidebar.error(f"Veri kaydetme hatası: {str(e)}")
+
+def get_ai_response(prompt, selected_model, api_key):
+    """Tüm AI modellerinden yanıt al"""
+    if selected_model == "Google Gemini":
+        response = model.generate_content(prompt)
+        return response.text
+    elif selected_model == "OpenAI ChatGPT":
+        client = openai.OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a professional content writer for Walmart.com product listings."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2000,
+            temperature=0.7
+        )
+        return response.choices[0].message.content
+    elif selected_model == "Ollama (Yerel)":
+        return call_ollama_api(prompt, ollama_model)
+    elif selected_model == "Groq (Ücretsiz)":
+        return call_groq_api(prompt, api_key)
+    elif selected_model == "Together AI (Ücretsiz)":
+        return call_together_api(prompt, api_key)
+    else:
+        return None
 
 # Ana içerik
 col1, col2 = st.columns([1, 2])
@@ -636,21 +955,11 @@ with col2:
             """
             
             # AI'dan yanıt al
-            if selected_model == "Google Gemini":
-                response = model.generate_content(prompt)
-                content = response.text
-            else:  # OpenAI ChatGPT
-                client = openai.OpenAI(api_key=api_key)
-                response = client.chat.completions.create(
-                    model="gpt-4",
-                    messages=[
-                        {"role": "system", "content": "You are a professional content writer for Walmart.com product listings."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=2000,
-                    temperature=0.7
-                )
-                content = response.choices[0].message.content
+            content = get_ai_response(prompt, selected_model, api_key)
+            
+            if content is None:
+                st.error("AI model yanıt veremiyor. Lütfen ayarları kontrol edin.")
+                st.stop()
             
             # İçeriği parse et
             sections = content.split('\n\n')
@@ -675,6 +984,9 @@ with col2:
             
             # Success animation
             st.balloons()
+            
+            # Training data'yı kaydet
+            save_training_data(product_name, product_features, title, key_features, description, selected_model)
             
             # Success message with animation
             st.markdown("""
