@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": "2025-07-19T14:30:00.000000",
+    "input": {
+      "product_name": "Sony WH-1000XM4 Wireless Bluetooth Headphones",
+      "product_features": "Premium wireless headphones with industry-leading noise cancellation technology. Features 30-hour battery life, quick charge (10 minutes for 5 hours), touch sensor controls, speak-to-chat technology, wearing detection, multipoint connection, LDAC codec support, comfortable over-ear design, foldable for travel, voice assistant compatible (Alexa, Google Assistant), black color, includes carrying case and cables."
+    },
+    "output": {
+      "title": "Sony WH-1000XM4 Wireless Bluetooth Headphones with Industry-Leading Noise Cancellation, 30H Battery & Quick Charge",
+      "key_features": "• Industry-leading Active Noise Cancellation technology\n• 30-hour battery life with quick charge (10min = 5hrs)\n• Premium sound quality with LDAC codec\n• Touch sensor controls and Speak-to-Chat\n• Wearing detection and multipoint connection\n• Voice assistant compatible (Alexa, Google Assistant)\n• Comfortable over-ear design with soft padding\n• Foldable design perfect for travel\n• Includes premium carrying case and cables",
+      "description": "Experience unparalleled audio excellence with the Sony WH-1000XM4 Wireless Bluetooth Headphones. These premium headphones feature Sony's industry-leading noise cancellation technology, automatically adapting to your environment for optimal listening. With an impressive 30-hour battery life and quick charge capability, you'll never miss a beat. The advanced LDAC codec delivers exceptional sound quality, while touch sensor controls and innovative Speak-to-Chat technology provide seamless user experience. The comfortable over-ear design ensures all-day wearability, and the foldable construction makes them perfect for travel. Compatible with voice assistants and featuring multipoint connection, these headphones represent the pinnacle of wireless audio technology. Includes premium carrying case and necessary cables for complete convenience."
+    },
+    "model_used": "Ollama (Yerel - Ücretsiz)",
+    "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-19T14:35:00.000000",
+    "input": {
+      "product_name": "Apple iPhone 15 Pro Max 256GB",
+      "product_features": "Latest iPhone with titanium design, A17 Pro chip, 6.7-inch Super Retina XDR display, advanced camera system with 5x telephoto lens, Action Button, USB-C connector, iOS 17, Face ID, wireless charging, water resistant IP68, available in multiple colors, 256GB storage capacity."
+    },
+    "output": {
+      "title": "Apple iPhone 15 Pro Max 256GB - Titanium Design with A17 Pro Chip, Advanced Camera & USB-C",
+      "key_features": "• A17 Pro chip for ultimate performance\n• 6.7-inch Super Retina XDR display\n• Advanced camera system with 5x telephoto\n• Durable titanium design construction\n• Action Button for quick shortcuts\n• USB-C connector for universal compatibility\n• iOS 17 with latest features\n• Face ID secure authentication\n• Wireless charging and MagSafe compatible\n• IP68 water resistance rating",
+      "description": "Discover the future of smartphones with the Apple iPhone 15 Pro Max featuring 256GB storage. Built with aerospace-grade titanium, this flagship device combines durability with elegance. The revolutionary A17 Pro chip delivers unprecedented performance for gaming, photography, and productivity. The stunning 6.7-inch Super Retina XDR display provides vibrant colors and sharp details, while the advanced camera system with 5x telephoto lens captures professional-quality photos and videos. The new Action Button offers customizable quick access to your favorite features, and the USB-C connector ensures universal compatibility. With iOS 17, Face ID security, wireless charging capabilities, and IP68 water resistance, this iPhone represents the pinnacle of mobile technology. Perfect for professionals, creators, and anyone demanding the best in smartphone innovation."
+    },
+    "model_used": "Ollama (Yerel - Ücretsiz)",
+    "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-19T14:40:00.000000",
+    "input": {
+      "product_name": "Samsung 55-inch 4K QLED Smart TV",
+      "product_features": "55-inch QLED display with 4K Ultra HD resolution, Quantum Dot technology, HDR10+ support, smart TV platform with streaming apps, voice control, gaming mode, multiple HDMI ports, wireless connectivity, sleek design, wall mountable, energy efficient."
+    },
+    "output": {
+      "title": "Samsung 55\" 4K QLED Smart TV with Quantum Dot Technology, HDR10+ & Streaming Apps",
+      "key_features": "• 55-inch 4K Ultra HD QLED display\n• Quantum Dot technology for vibrant colors\n• HDR10+ support for enhanced contrast\n• Smart TV platform with popular streaming apps\n• Voice control and smart remote\n• Gaming mode for optimized performance\n• Multiple HDMI and USB ports\n• WiFi connectivity and screen mirroring\n• Sleek design with wall mount compatibility\n• Energy efficient LED backlighting",
+      "description": "Transform your entertainment experience with this Samsung 55-inch 4K QLED Smart TV. Featuring cutting-edge Quantum Dot technology, this television delivers over a billion colors for incredibly lifelike picture quality. The 4K Ultra HD resolution combined with HDR10+ support ensures every detail is crisp and vibrant, whether you're watching movies, sports, or playing games. The integrated smart TV platform provides instant access to popular streaming services, while voice control functionality makes navigation effortless. Gaming enthusiasts will appreciate the dedicated gaming mode that optimizes performance for smooth gameplay. With multiple connectivity options including HDMI and USB ports, plus wireless capabilities, this TV seamlessly integrates with all your devices. The sleek, modern design complements any room decor and includes wall mounting options for flexible placement. Energy-efficient LED backlighting ensures excellent performance while keeping power consumption low."
+    },
+    "model_used": "Ollama (Yerel - Ücretsiz)",
+    "prompt_template": "walmart_product_content"
+  }
+]
