@@ -215,7 +215,6 @@ st.sidebar.markdown("""
 
 # Data collection toggle
 collect_data = st.sidebar.checkbox("📊 Veri Toplama", value=True, help="Kendi modelinizi eğitmek için veri toplar")
-collect_data = st.sidebar.checkbox("📊 Veri Toplama", value=True, help="Kendi modelinizi eğitmek için veri toplar")
 
 # Fine-tuning Management
 st.sidebar.markdown("---")
