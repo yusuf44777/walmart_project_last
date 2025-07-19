@@ -40,5 +40,19 @@
     },
     "model_used": "Ollama (Yerel - Ücretsiz)",
     "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-19T13:15:26.430711",
+    "input": {
+      "product_name": "Ramadan Calendar Metal Islamic Gift Table Decor",
+      "product_features": "Mark the holy month with elegance through the Islamic Gift Ramadan Calendar Metal Islamic Table Decor, a unique blend of functionality and spiritual beauty.\n\nThis piece, intricately designed with Islamic calligraphy, serves not only as a reminder of daily reflections but also as a stunning piece of Islamic art that enhances any Islamic home decor. Perfect for those observing the month's progress, it's an essential Muslim gift that beautifully complements Islamic wall art and Quran wall art, bringing the spirit of Ramadan into the heart of your home. Enhance your Ramadan decorations and celebrate Eid Mubarak with a touch of elegance that resonates with faith and tradition. This set is also an ideal Ramadan decor for your walls.\n\nSee other Islamic Table Decor by clicking here!\n\nExperience the Beauty of Islamic Wall Art\nWelcome to our Islamic Wall Art Store where tradition meets modernity in our exclusive collection of Islamic metal decor, Islamic wood decor and Islamic glass decor. Each piece is meticulously crafted to reflect the rich heritage and artistry of Islamic design. Whether you are looking for the timeless elegance of metalwork, classy wooden crafts, or the delicate beauty of glass art, our decor products promise to elevate any space with a touch of Islamic charm. Enjoy shopping at our store where faith and craftsmanship are beautifully intertwined."
+    },
+    "output": {
+      "title": "",
+      "key_features": "",
+      "description": ""
+    },
+    "model_used": "Ollama (Yerel - Ücretsiz)",
+    "prompt_template": "walmart_product_content"
   }
 ]

@@ -647,27 +647,48 @@ else:
 def call_ollama_api(prompt, model="llama3.1:8b"):
     """Ollama API çağrısı - Geliştirilmiş versiyon"""
     try:
+        # Model'e göre parametreleri optimize et
+        if model == "walmart-gpt":
+            options = {
+                "temperature": 0.3,  # Daha tutarlı sonuçlar için düşük
+                "num_ctx": 4096,
+                "top_k": 20,
+                "top_p": 0.8,
+                "repeat_penalty": 1.2,
+                "num_predict": 1000  # Daha uzun yanıtlar için
+            }
+        else:
+            options = {
+                "temperature": 0.5,  # Daha düşük temperature
+                "num_ctx": 4096,
+                "top_k": 30,
+                "top_p": 0.85,
+                "repeat_penalty": 1.15,
+                "num_predict": 1000
+            }
+        
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
                 "model": model,
                 "prompt": prompt,
                 "stream": False,
-                "options": {
-                    "temperature": 0.7,
-                    "num_ctx": 4096,
-                    "top_k": 40,
-                    "top_p": 0.9,
-                    "repeat_penalty": 1.1
-                }
+                "options": options
             },
-            timeout=120
+            timeout=180  # Daha uzun timeout
         )
         
         if response.status_code == 200:
-            return response.json()["response"]
+            result = response.json()["response"]
+            
+            # Debug için yanıt bilgileri
+            st.info(f"✅ Ollama yanıtı alındı ({len(result)} karakter)")
+            
+            return result
         else:
             st.error(f"Ollama API hatası: {response.status_code}")
+            if response.text:
+                st.code(response.text)
             return None
             
     except requests.exceptions.ConnectionError:
@@ -901,23 +922,32 @@ with col2:
                 progress_bar.progress(i)
                 time.sleep(0.3)
             
-            # Prompt oluşturma
-            prompt = f"""
-            Walmart.com için aşağıdaki ürün bilgilerine göre profesyonel bir içerik oluştur:
-            
-            Ürün Adı: {product_name}
-            Ürün Özellikleri: {product_features}
-            
-            Walmart standartlarına uygun olarak aşağıdaki formatı kullan:
-            
-            TITLE: [Walmart için SEO uyumlu, çekici bir başlık]
-            
-            KEY_FEATURES: [3-10 önemli özellik, her satırda bir özellik]
-            
-            DESCRIPTION: [Walmart standartlarına uygun ürün açıklaması - minimum 150 kelime]
-            
-            Tüm içerik İngilizce olsun ve Walmart'ın profesyonel tonunu yansıtsın.
-            """
+            # Geliştirilmiş prompt oluşturma
+            prompt = f"""You are a professional content writer for Walmart.com. Create product content in the exact format specified below.
+
+Product Name: {product_name}
+Product Features: {product_features}
+
+Create content using this EXACT format:
+
+TITLE: [Write a compelling, SEO-optimized product title for Walmart.com. Include brand, product name, and key selling points. Maximum 150 characters.]
+
+KEY_FEATURES: [List 5-8 key product features. Each feature should be on a new line starting with "•". Focus on benefits that matter to customers.]
+
+DESCRIPTION: [Write a comprehensive product description for Walmart.com. Minimum 100 words. Include benefits, use cases, and why customers should buy this product. Use professional, persuasive language.]
+
+Example format:
+TITLE: Sony WH-1000XM4 Wireless Bluetooth Headphones with Noise Cancellation, 30H Battery & Quick Charge
+
+KEY_FEATURES: • Industry-leading Active Noise Cancellation technology
+• 30-hour battery life with quick charge capability
+• Premium sound quality with LDAC codec support
+• Touch sensor controls and voice assistant compatibility
+• Comfortable over-ear design perfect for travel
+
+DESCRIPTION: Experience exceptional audio quality with these premium wireless headphones featuring Sony's industry-leading noise cancellation technology. The 30-hour battery life ensures all-day listening, while quick charge provides 5 hours of playback with just 10 minutes of charging. Advanced LDAC codec delivers superior sound quality, and intuitive touch controls make operation effortless. Compatible with voice assistants and featuring a comfortable over-ear design, these headphones are perfect for travel, work, or everyday listening. The foldable design and included carrying case make them ideal for on-the-go use.
+
+Now create content for the product above using this exact format. Make sure to include all three sections: TITLE, KEY_FEATURES, and DESCRIPTION."""
             
             # AI'dan yanıt al
             content = get_ai_response(prompt, selected_model, api_key)
@@ -926,19 +956,110 @@ with col2:
                 st.error("AI model yanıt veremiyor. Lütfen ayarları kontrol edin.")
                 st.stop()
             
-            # İçeriği parse et
-            sections = content.split('\n\n')
+            # Debug için ham yanıtı göster (geliştirme aşamasında)
+            with st.expander("🔍 Debug: Ham AI Yanıtı", expanded=False):
+                st.code(content, language="text")
+                st.info(f"Yanıt uzunluğu: {len(content)} karakter")
+                st.info(f"Kullanılan model: {selected_model}")
+                if selected_model == "Ollama (Yerel - Ücretsiz)":
+                    st.info(f"Ollama modeli: {ollama_model}")
+            
+            # İçeriği parse et - Geliştirilmiş versiyon
             title = ""
             key_features = ""
             description = ""
             
-            for section in sections:
-                if section.startswith('TITLE:'):
-                    title = section.replace('TITLE:', '').strip()
-                elif section.startswith('KEY_FEATURES:'):
-                    key_features = section.replace('KEY_FEATURES:', '').strip()
-                elif section.startswith('DESCRIPTION:'):
-                    description = section.replace('DESCRIPTION:', '').strip()
+            # Yanıtı satırlara böl
+            lines = content.split('\n')
+            current_section = None
+            
+            for line in lines:
+                line = line.strip()
+                
+                # Boş satırları atla
+                if not line:
+                    continue
+                
+                # Bölüm başlıklarını kontrol et
+                if line.startswith('TITLE:'):
+                    current_section = 'title'
+                    title = line.replace('TITLE:', '').strip()
+                    continue
+                elif line.startswith('KEY_FEATURES:'):
+                    current_section = 'key_features'
+                    # Eğer aynı satırda içerik varsa al
+                    if len(line.replace('KEY_FEATURES:', '').strip()) > 0:
+                        key_features = line.replace('KEY_FEATURES:', '').strip()
+                    continue
+                elif line.startswith('DESCRIPTION:'):
+                    current_section = 'description'
+                    # Eğer aynı satırda içerik varsa al
+                    if len(line.replace('DESCRIPTION:', '').strip()) > 0:
+                        description = line.replace('DESCRIPTION:', '').strip()
+                    continue
+                
+                # İçeriği ilgili bölüme ekle
+                if current_section == 'title' and not title:
+                    title = line
+                elif current_section == 'key_features':
+                    if key_features:
+                        key_features += '\n' + line
+                    else:
+                        key_features = line
+                elif current_section == 'description':
+                    if description:
+                        description += ' ' + line
+                    else:
+                        description = line
+            
+            # Eğer parse edilemiyorsa alternatif yöntem dene
+            if not title or not key_features or not description:
+                # Daha basit parse yöntemi
+                sections = content.split('\n\n')
+                for section in sections:
+                    if 'TITLE:' in section and not title:
+                        title = section.split('TITLE:')[-1].strip()
+                    elif 'KEY_FEATURES:' in section and not key_features:
+                        key_features = section.split('KEY_FEATURES:')[-1].strip()
+                    elif 'DESCRIPTION:' in section and not description:
+                        description = section.split('DESCRIPTION:')[-1].strip()
+            
+            # Son kontrol - eğer hala boşsa uyarı ver ve alternatif çözüm sun
+            if not title:
+                title = "Başlık oluşturulamadı - AI yanıtını kontrol edin"
+                st.warning("⚠️ Başlık parse edilemedi. Ham yanıtı kontrol edin.")
+            if not key_features:
+                key_features = "• Özellikler oluşturulamadı\n• AI yanıtını kontrol edin"
+                st.warning("⚠️ Özellikler parse edilemedi. Ham yanıtı kontrol edin.")
+            if not description:
+                description = "Ürün açıklaması oluşturulamadı. AI yanıtını kontrol edin."
+                st.warning("⚠️ Açıklama parse edilemedi. Ham yanıtı kontrol edin.")
+            
+            # Başarısız parse durumunda alternatif çözüm öner
+            if (title == "Başlık oluşturulamadı - AI yanıtını kontrol edin" or 
+                "oluşturulamadı" in key_features or 
+                "oluşturulamadı" in description):
+                
+                st.error("🚨 İçerik parse edilemedi!")
+                st.info("💡 Çözüm önerileri:")
+                st.info("1. Farklı bir Ollama modeli deneyin (örn: llama3.1:70b)")
+                st.info("2. OpenAI ChatGPT'yi deneyin")
+                st.info("3. Ürün özelliklerini daha kısa ve net yazın")
+                
+                # Manuel düzenleme seçeneği sun
+                st.markdown("### ✏️ Manuel Düzenleme")
+                manual_title = st.text_input("Başlık:", value=title if title != "Başlık oluşturulamadı - AI yanıtını kontrol edin" else "")
+                manual_features = st.text_area("Özellikler:", value=key_features if "oluşturulamadı" not in key_features else "", height=100)
+                manual_description = st.text_area("Açıklama:", value=description if "oluşturulamadı" not in description else "", height=150)
+                
+                if st.button("💾 Manuel İçeriği Kaydet"):
+                    if manual_title and manual_features and manual_description:
+                        title = manual_title
+                        key_features = manual_features
+                        description = manual_description
+                        save_training_data(product_name, product_features, title, key_features, description, f"{selected_model} (Manuel)")
+                        st.success("✅ Manuel içerik kaydedildi!")
+                        st.rerun()
             
             # Clear loading
             st.markdown("""
