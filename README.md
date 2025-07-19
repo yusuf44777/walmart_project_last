@@ -1,25 +1,60 @@
-# Walmart Ürün Açıklaması Üreteci
+# 🛒 Walmart Ürün Açıklaması Üreteci
 
-Bu uygulama, Walmart.com için AI destekli ürün açıklaması oluşturan bir Streamlit uygulamasıdır.
+Bu uygulama, Walmart.com için AI destekli ürün açıklaması oluşturan modern bir Streamlit uygulamasıdır.
 
-## Özellikler
+## ✨ Özellikler
 
-- Google Gemini AI ve OpenAI ChatGPT desteği
-- Walmart standartlarına uygun içerik üretimi
-- SEO uyumlu başlık ve açıklama oluşturma
-- Kullanıcı dostu arayüz
+- 🤖 **Ollama (Ücretsiz & Yerel)** ve OpenAI ChatGPT desteği
+- 🎯 **Walmart-GPT**: Özel fine-tuned edilmiş model
+- 📊 **Fine-tuning veri toplama** ve model eğitimi
+- 🏷️ Walmart standartlarına uygun içerik üretimi
+- 🔍 SEO uyumlu başlık ve açıklama oluşturma
+- 💾 Export özelliği (TXT, JSONL formatları)
+- 🎨 Modern ve responsive kullanıcı arayüzü
 
-## Kurulum
+## 🚀 Kurulum
 
-1. Repository'yi klonlayın
-2. Gerekli paketleri yükleyin:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Uygulamayı çalıştırın:
-   ```bash
-   streamlit run walmart.py
-   ```
+### Gereksinimler
+- Python 3.11+
+- Ollama (önerilen - ücretsiz)
+
+### 1. Repository'yi klonlayın
+```bash
+git clone https://github.com/yusuf44777/walmart_project_last.git
+cd walmart_project_last
+```
+
+### 2. Sanal ortam oluşturun (önerilen)
+```bash
+python -m venv venv
+source venv/bin/activate  # macOS/Linux
+# veya
+venv\Scripts\activate     # Windows
+```
+
+### 3. Gerekli paketleri yükleyin
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Ollama'yı kurun (ücretsiz seçenek)
+```bash
+# macOS
+brew install ollama
+
+# veya manuel kurulum: https://ollama.ai/download
+```
+
+### 5. Ollama'yı başlatın ve model indirin
+```bash
+ollama serve
+ollama pull llama3.1:8b
+```
+
+### 6. Uygulamayı çalıştırın
+```bash
+streamlit run walmart.py
+```
 
 ## Kullanım
 
