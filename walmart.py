@@ -359,19 +359,74 @@ with col2:
                 progress_bar.progress(i)
                 time.sleep(0.3)
         try:
-            # Geliştirilmiş prompt oluşturma
-            prompt = f"""You are a professional content writer for Walmart.com. Create product content in the exact format specified below.
+            # Walmart Guidelines Compliant Prompt
+            prompt = f"""You are a professional content writer for Walmart.com. Follow Walmart's official content guidelines strictly.
 
 Product Name: {product_name}
 Product Features: {product_features}
 
 Create content using this EXACT format:
 
-TITLE: [Write a compelling, SEO-optimized product title for Walmart.com. Include brand, product name, and key selling points. Maximum 150 characters.]
+TITLE: [Write a compelling, SEO-optimized product title for Walmart.com following strict guidelines:
 
-KEY_FEATURES: [List 5-8 key product features. Each feature should be on a new line starting with "•". Focus on benefits that matter to customers.]
+DO:
+- Write brief titles not exceeding 100 characters
+- Create clear, descriptive titles without repetitive keywords, multiple brands or product types
+- Include relevant values that exclude phrases like "Coming soon" or "Out-of-stock"
+- Include brand, product name, and key selling points
 
-DESCRIPTION: [Write a comprehensive product description for Walmart.com. Minimum 100 words. Include benefits, use cases, and why customers should buy this product. Use professional, persuasive language.]
+DON'T:
+- Write in all caps or use special characters (e.g. '~', '!', '*', '$')
+- Make promotional claims (e.g., "Free shipping", "Hot sale", "Top rated", "Premium quality", "Best-selling", "Clearance", "Black Friday", "Savings", "Low price", "40% off")
+- Make competitor exclusivity claims (e.g., "Amazon Exclusive", "Target Exclusive")
+- Include irrelevant information (e.g., "Coming soon", "Out-of-stock", "Discontinued")
+- Incorporate any URLs in any format, including Walmart.com
+- Use external URLs
+- Use languages other than English
+- Include years (e.g. 2025, 2024) unless recommended by Content Standards
+
+Maximum 100 characters total.]
+
+KEY_FEATURES: [List 3-10 key product features following Walmart's guidelines:
+
+DO:
+- List the most important features first
+- Include 3 to 10 of the most important benefits and features
+- Use short phrases or keywords
+- Focus on benefits that matter to customers
+
+DON'T:
+- Use more than 80 characters (space included) per key feature
+- Make promotional claims (e.g., "Free shipping", "Hot sale", "Top rated", "Premium quality", "Best-selling", "Clearance", "Black Friday", "Savings", "Low price")
+- Include irrelevant information (e.g., "Coming soon", "Out-of-stock", "Discontinued")
+- Use external URLs
+- Use emojis
+- Use additional text formatting like HTML, bullets or numbered lists
+- Use languages other than English
+- Describe a different product than mentioned in the title
+
+Each feature should be on a new line starting with "•" and be under 80 characters.]
+
+DESCRIPTION: [Write a comprehensive product description following Walmart's guidelines:
+
+DO:
+- Describe the item's features and benefits, including Product Name, Brand and keywords
+- Include related words that customers are likely to search for
+- Create one paragraph with a minimum of 150 words
+- Use professional, persuasive language
+- Focus on benefits, use cases, and why customers should buy this product
+
+DON'T:
+- Make competitor exclusivity claims (e.g., "Amazon Exclusive", "Target Exclusive")
+- Make promotional claims (e.g., "Free shipping", "Hot sale", "Top rated", "Premium quality", "Best-selling", "Clearance", "Black Friday", "Savings", "Low price")
+- Make authenticity claims (e.g., "100% Authentic", "Genuine")
+- Include irrelevant information (e.g., "Coming soon", "Out-of-stock", "Discontinued")
+- Use external URLs
+- Use emojis
+- Use languages other than English
+- Describe a different product than mentioned in the title
+
+Write a single, comprehensive paragraph of at least 150 words.]
 
 Now create content for the product above using this exact format. Make sure to include all three sections: TITLE, KEY_FEATURES, and DESCRIPTION."""
             
