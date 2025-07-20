@@ -113,7 +113,14 @@ elif selected_model == "Ollama (Yerel - Ücretsiz)":
             models = response.json().get("models", [])
             model_names = [model["name"] for model in models]
             
-            if ollama_model in model_names:
+            # Model ismini kontrol et (hem tam isim hem de base isim)
+            model_available = False
+            for model_name in model_names:
+                if ollama_model in model_name or model_name.startswith(ollama_model):
+                    model_available = True
+                    break
+            
+            if model_available:
                 if ollama_model == "walmart-gpt":
                     st.sidebar.info("🎯 Walmart-GPT hazır! (Özel Model)")
                 else:
