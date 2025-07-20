@@ -6,6 +6,27 @@ import requests
 from datetime import datetime
 import pandas as pd
 
+# Environment detection
+def get_ollama_base_url():
+    """Ollama base URL'ini environment'a göre belirle"""
+    # Heroku, Railway, Streamlit Cloud için environment variables kontrol et
+    if os.environ.get('STREAMLIT_CLOUD_ENV'):
+        return None  # Streamlit Cloud'da Ollama yok
+    elif os.environ.get('HEROKU_APP_NAME'):
+        return None  # Heroku'da Ollama yok
+    elif os.environ.get('RAILWAY_ENVIRONMENT'):
+        return None  # Railway'de Ollama yok
+    else:
+        # Local environment
+        return "http://localhost:11434"
+
+# Global Ollama base URL
+OLLAMA_BASE_URL = get_ollama_base_url()
+
+def is_local_environment():
+    """Local environment kontrolü"""
+    return OLLAMA_BASE_URL is not None
+
 # Export fonksiyonu
 def export_training_data_for_finetuning(format_type="jsonl"):
     """Training data'yı fine-tuning formatına çevir"""
@@ -72,14 +93,20 @@ st.set_page_config(
 st.title("🛒 Walmart Ürün Açıklaması Üreteci")
 st.subheader("AI ile profesyonel ürün içerikleri oluşturun")
 
+# Environment info
+if not is_local_environment():
+    st.info("ℹ️ **Deploy Ortamı**: Bu uygulama cloud'da çalışıyor. Ollama yerel ortamda kullanılabilir, OpenAI ChatGPT önerilir.")
+else:
+    st.success("💻 **Yerel Ortam**: Hem Ollama hem OpenAI ChatGPT kullanılabilir.")
+
 # Sidebar başlığı
 st.sidebar.title("⚙️ Ayarlar")
 
 # Model selection
 selected_model = st.sidebar.selectbox(
     "🤖 AI Model Seçin:",
-    ["OpenAI ChatGPT", "Ollama (Yerel - Ücretsiz)"],
-    index=1,
+    ["OpenAI ChatGPT", "Ollama (Yerel - Ücretsiz)"] if is_local_environment() else ["OpenAI ChatGPT"],
+    index=1 if is_local_environment() else 0,
     help="Kullanmak istediğiniz AI modelini seçin"
 )
 
@@ -97,57 +124,67 @@ if selected_model == "OpenAI ChatGPT":
         st.sidebar.success("✅ OpenAI ChatGPT hazır!")
 
 elif selected_model == "Ollama (Yerel - Ücretsiz)":
-    st.sidebar.success("✅ Ollama Hazır! (Tamamen Ücretsiz)")
-    
-    ollama_model = st.sidebar.selectbox(
-        "Ollama Model:",
-        ["walmart-gpt", "llama3.1:8b", "walmart-gpt-expert", "walmart-gpt-advanced", "walmart-gpt-basic", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
-        index=0,
-        help="Kullanılacak Ollama modelini seçin. Walmart modelleri özel eğitilmiştir."
-    )
-    
-    # Model durumunu kontrol et
-    try:
-        response = requests.get("http://localhost:11434/api/tags", timeout=2)
-        if response.status_code == 200:
-            models = response.json().get("models", [])
-            model_names = [model["name"] for model in models]
-            
-            # Model ismini kontrol et (hem tam isim hem de base isim)
-            model_available = False
-            for model_name in model_names:
-                if ollama_model in model_name or model_name.startswith(ollama_model):
-                    model_available = True
-                    break
-            
-            if model_available:
-                if "walmart-gpt" in ollama_model:
-                    if "expert" in ollama_model:
-                        st.sidebar.success("🏆 Walmart-GPT Expert hazır! (Uzman Seviye)")
-                    elif "advanced" in ollama_model:
-                        st.sidebar.info("🎯 Walmart-GPT Advanced hazır! (Gelişmiş)")
-                    elif "basic" in ollama_model:
-                        st.sidebar.info("🎯 Walmart-GPT Basic hazır! (Temel)")
+    if not is_local_environment():
+        st.sidebar.error("❌ Ollama sadece yerel ortamda çalışır!")
+        st.sidebar.info("💡 Deploy edilmiş uygulamada OpenAI ChatGPT kullanın.")
+        api_key = None
+    else:
+        st.sidebar.success("✅ Ollama Hazır! (Tamamen Ücretsiz)")
+        
+        ollama_model = st.sidebar.selectbox(
+            "Ollama Model:",
+            ["walmart-gpt", "llama3.1:8b", "walmart-gpt-expert", "walmart-gpt-advanced", "walmart-gpt-basic", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
+            index=0,
+            help="Kullanılacak Ollama modelini seçin. Walmart modelleri özel eğitilmiştir."
+        )
+        
+        # Model durumunu kontrol et
+        try:
+            response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=2)
+            if response.status_code == 200:
+                models = response.json().get("models", [])
+                model_names = [model["name"] for model in models]
+                
+                # Model ismini kontrol et (hem tam isim hem de base isim)
+                model_available = False
+                for model_name in model_names:
+                    if ollama_model in model_name or model_name.startswith(ollama_model):
+                        model_available = True
+                        break
+                
+                if model_available:
+                    if "walmart-gpt" in ollama_model:
+                        if "expert" in ollama_model:
+                            st.sidebar.success("🏆 Walmart-GPT Expert hazır! (Uzman Seviye)")
+                        elif "advanced" in ollama_model:
+                            st.sidebar.info("🎯 Walmart-GPT Advanced hazır! (Gelişmiş)")
+                        elif "basic" in ollama_model:
+                            st.sidebar.info("🎯 Walmart-GPT Basic hazır! (Temel)")
+                        else:
+                            st.sidebar.info("🎯 Walmart-GPT hazır! (Özel Model)")
                     else:
-                        st.sidebar.info("🎯 Walmart-GPT hazır! (Özel Model)")
+                        st.sidebar.info(f"🎯 {ollama_model} hazır!")
                 else:
-                    st.sidebar.info(f"🎯 {ollama_model} hazır!")
+                    if "walmart-gpt" in ollama_model:
+                        st.sidebar.warning(f"⚠️ {ollama_model} henüz oluşturulmadı")
+                    else:
+                        st.sidebar.warning(f"⚠️ {ollama_model} yüklü değil")
             else:
-                if "walmart-gpt" in ollama_model:
-                    st.sidebar.warning(f"⚠️ {ollama_model} henüz oluşturulmadı")
-                else:
-                    st.sidebar.warning(f"⚠️ {ollama_model} yüklü değil")
-        else:
-            st.sidebar.error("❌ Ollama servisine bağlanamıyor")
-    except:
-        st.sidebar.error("❌ Ollama çalışmıyor")
-    
-    api_key = "ollama_local"
+                st.sidebar.error("❌ Ollama servisine bağlanamıyor")
+        except:
+            st.sidebar.error("❌ Ollama çalışmıyor")
+        
+        api_key = "ollama_local"
 
 # Enhanced help section
 st.sidebar.markdown("---")
-st.sidebar.subheader("🎯 Ollama Avantajları")
-st.sidebar.info("• Tamamen ücretsiz\n• Yerel çalışır (gizlilik)\n• Çok hızlı\n• Veri güvenliği")
+if is_local_environment():
+    st.sidebar.subheader("🎯 Ollama Avantajları")
+    st.sidebar.info("• Tamamen ücretsiz\n• Yerel çalışır (gizlilik)\n• Çok hızlı\n• Veri güvenliği")
+else:
+    st.sidebar.subheader("☁️ Deploy Ortamı")
+    st.sidebar.warning("Bu uygulama deploy edilmiş durumda. Ollama yerel ortamda çalışır.")
+    st.sidebar.info("💡 OpenAI ChatGPT kullanarak devam edebilirsiniz.")
 
 # Fine-tuning data collection
 st.sidebar.markdown("---")
@@ -162,47 +199,70 @@ if os.path.exists("training_data.json"):
         
         st.sidebar.info(f"📊 Toplam veri: {len(training_data)} örnek")
         
-        # Model eğitimi butonları
-        st.sidebar.markdown("### 🏋️ Model Eğitimi")
+        # Model eğitimi butonları (sadece local environment'da)
+        if is_local_environment():
+            st.sidebar.markdown("### 🏋️ Model Eğitimi")
+            
+            col_train1, col_train2 = st.sidebar.columns(2)
+            
+            with col_train1:
+                if st.button("🔧 Temel Model Oluştur", help="Training data ile temel model oluştur"):
+                    with st.spinner("Temel model oluşturuluyor..."):
+                        import subprocess
+                        result = subprocess.run(
+                            ["python3", "create_walmart_model.py"],
+                            cwd="/Users/mahiracan/Desktop/walmart_project_last",
+                            capture_output=True,
+                            text=True
+                        )
+                        
+                        if result.returncode == 0:
+                            st.sidebar.success("✅ Temel model oluşturuldu!")
+                        else:
+                            st.sidebar.error(f"❌ Hata: {result.stderr}")
+            
+            with col_train2:
+                if st.button("🚀 Gelişmiş Model Oluştur", help="Optimize edilmiş veri ile gelişmiş model oluştur"):
+                    with st.spinner("Gelişmiş model oluşturuluyor..."):
+                        import subprocess
+                        result = subprocess.run(
+                            ["python3", "model_optimizer.py"],
+                            cwd="/Users/mahiracan/Desktop/walmart_project_last",
+                            capture_output=True,
+                            text=True
+                        )
+                        
+                        if result.returncode == 0:
+                            st.sidebar.success("✅ Gelişmiş modeller oluşturuldu!")
+                        else:
+                            st.sidebar.error(f"❌ Hata: {result.stderr}")
+            
+            # Yeni satır - Analytics butonları
+            col_train3, col_train4 = st.sidebar.columns(2)
+            
+            with col_train4:
+                if st.button("📈 Model Analytics", help="Model performansını analiz et"):
+                    with st.spinner("Analytics çalıştırılıyor..."):
+                        import subprocess
+                        result = subprocess.run(
+                            ["python3", "model_analytics.py"],
+                            cwd="/Users/mahiracan/Desktop/walmart_project_last",
+                            capture_output=True,
+                            text=True
+                        )
+                        
+                        if result.returncode == 0:
+                            st.sidebar.success("✅ Analytics tamamlandı!")
+                        else:
+                            st.sidebar.error(f"❌ Hata: {result.stderr}")
+        else:
+            st.sidebar.info("💡 Model eğitimi yerel ortamda kullanılabilir.")
         
-        col_train1, col_train2 = st.sidebar.columns(2)
+        # Export işlemleri (her ortamda kullanılabilir)
+        st.sidebar.markdown("### 📊 Veri Export")
+        col_export1, col_export2 = st.sidebar.columns(2)
         
-        with col_train1:
-            if st.button("🔧 Temel Model Oluştur", help="Training data ile temel model oluştur"):
-                with st.spinner("Temel model oluşturuluyor..."):
-                    import subprocess
-                    result = subprocess.run(
-                        ["python3", "create_walmart_model.py"],
-                        cwd="/Users/mahiracan/Desktop/walmart_project_last",
-                        capture_output=True,
-                        text=True
-                    )
-                    
-                    if result.returncode == 0:
-                        st.sidebar.success("✅ Temel model oluşturuldu!")
-                    else:
-                        st.sidebar.error(f"❌ Hata: {result.stderr}")
-        
-        with col_train2:
-            if st.button("🚀 Gelişmiş Model Oluştur", help="Optimize edilmiş veri ile gelişmiş model oluştur"):
-                with st.spinner("Gelişmiş model oluşturuluyor..."):
-                    import subprocess
-                    result = subprocess.run(
-                        ["python3", "model_optimizer.py"],
-                        cwd="/Users/mahiracan/Desktop/walmart_project_last",
-                        capture_output=True,
-                        text=True
-                    )
-                    
-                    if result.returncode == 0:
-                        st.sidebar.success("✅ Gelişmiş modeller oluşturuldu!")
-                    else:
-                        st.sidebar.error(f"❌ Hata: {result.stderr}")
-        
-        # Yeni satır - Analytics butonları
-        col_train3, col_train4 = st.sidebar.columns(2)
-        
-        with col_train3:
+        with col_export1:
             if st.button("📊 Export JSONL"):
                 export_file = export_training_data_for_finetuning("jsonl")
                 if export_file:
@@ -218,21 +278,21 @@ if os.path.exists("training_data.json"):
                         mime="application/jsonl"
                     )
         
-        with col_train4:
-            if st.button("📈 Model Analytics", help="Model performansını analiz et"):
-                with st.spinner("Analytics çalıştırılıyor..."):
-                    import subprocess
-                    result = subprocess.run(
-                        ["python3", "model_analytics.py"],
-                        cwd="/Users/mahiracan/Desktop/walmart_project_last",
-                        capture_output=True,
-                        text=True
-                    )
+        with col_export2:
+            if st.button("� Export CSV"):
+                export_file = export_training_data_for_finetuning("csv")
+                if export_file:
+                    st.sidebar.success(f"✅ {export_file} oluşturuldu!")
                     
-                    if result.returncode == 0:
-                        st.sidebar.success("✅ Analytics tamamlandı!")
-                    else:
-                        st.sidebar.error(f"❌ Hata: {result.stderr}")
+                    with open(export_file, "rb") as f:
+                        data = f.read()
+                    
+                    st.sidebar.download_button(
+                        "💾 CSV İndir",
+                        data=data,
+                        file_name=export_file,
+                        mime="text/csv"
+                    )
         
         # Training data clear button
         if st.sidebar.button("🗑️ Veriyi Temizle"):
@@ -247,6 +307,13 @@ else:
 # AI Model Functions
 def call_ollama_api(prompt, model="llama3.1:8b"):
     """Ollama API çağrısı - Geliştirilmiş versiyon"""
+    
+    # Local environment kontrolü
+    if not is_local_environment():
+        st.error("❌ Ollama sadece yerel ortamda çalışır!")
+        st.info("💡 Deploy edilmiş uygulamada OpenAI ChatGPT kullanın.")
+        return None
+    
     try:
         # Model'e göre parametreleri optimize et
         if "walmart-gpt" in model:
@@ -284,7 +351,7 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
             model_name = f"{model}:latest"
         
         response = requests.post(
-            "http://localhost:11434/api/generate",
+            f"{OLLAMA_BASE_URL}/api/generate",
             json={
                 "model": model_name,
                 "prompt": prompt,
@@ -685,6 +752,10 @@ Now create content for the product above using this exact format. Make sure to i
 st.markdown("---")
 st.markdown("### 🛒 Walmart İçerik Üreteci")
 st.write(f"🤖 AI Teknolojisi: **{selected_model}**")
+if is_local_environment():
+    st.write("💻 **Ortam**: Yerel (Ollama + OpenAI destekli)")
+else:
+    st.write("☁️ **Ortam**: Deploy (OpenAI destekli)")
 st.write("🎯 Walmart standartlarına uygun SEO dostu içerik üretimi")
 st.write("© 2025 - Walmart İçerik Üreteci | Güvenli & Hızlı AI Çözümü")
 st.write("Mahir Yusuf Açan Tarafından Geliştirildi")
