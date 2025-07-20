@@ -101,7 +101,7 @@ elif selected_model == "Ollama (Yerel - Ücretsiz)":
     
     ollama_model = st.sidebar.selectbox(
         "Ollama Model:",
-        ["walmart-gpt-expert", "walmart-gpt-advanced", "walmart-gpt-basic", "walmart-gpt", "llama3.1:8b", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
+        ["walmart-gpt", "llama3.1:8b", "walmart-gpt-expert", "walmart-gpt-advanced", "walmart-gpt-basic", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
         index=0,
         help="Kullanılacak Ollama modelini seçin. Walmart modelleri özel eğitilmiştir."
     )
@@ -249,18 +249,28 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
     """Ollama API çağrısı - Geliştirilmiş versiyon"""
     try:
         # Model'e göre parametreleri optimize et
-        if model == "walmart-gpt":
+        if "walmart-gpt" in model:
+            # Walmart modelleri için özel parametreler
             options = {
                 "temperature": 0.3,  # Daha tutarlı sonuçlar için düşük
                 "num_ctx": 4096,
                 "top_k": 20,
                 "top_p": 0.8,
                 "repeat_penalty": 1.2,
-                "num_predict": 1000  # Daha uzun yanıtlar için
+                "num_predict": 1500  # Daha uzun yanıtlar için
+            }
+        elif model == "llama3.1:8b":
+            options = {
+                "temperature": 0.6,  # Dengeli ayar
+                "num_ctx": 4096,
+                "top_k": 30,
+                "top_p": 0.85,
+                "repeat_penalty": 1.15,
+                "num_predict": 1200
             }
         else:
             options = {
-                "temperature": 0.5,  # Daha düşük temperature
+                "temperature": 0.5,  # Varsayılan ayar
                 "num_ctx": 4096,
                 "top_k": 30,
                 "top_p": 0.85,
@@ -268,10 +278,15 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
                 "num_predict": 1000
             }
         
+        # Model ismini normalize et (eğer :latest yoksa ekle)
+        model_name = model
+        if "walmart-gpt" in model and ":latest" not in model:
+            model_name = f"{model}:latest"
+        
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
-                "model": model,
+                "model": model_name,
                 "prompt": prompt,
                 "stream": False,
                 "options": options
@@ -283,7 +298,7 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
             result = response.json()["response"]
             
             # Debug için yanıt bilgileri
-            st.info(f"✅ Ollama yanıtı alındı ({len(result)} karakter)")
+            st.info(f"✅ Ollama yanıtı alındı ({len(result)} karakter) - Model: {model_name}")
             
             return result
         else:
