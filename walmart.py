@@ -30,7 +30,7 @@ def export_training_data_for_finetuning(format_type="jsonl"):
                 }
                 formatted_data.append(formatted_item)
             
-            # JSONL formatında kaydet
+            # JSONL
             with open("walmart_finetuning_data.jsonl", "w", encoding="utf-8") as f:
                 for item in formatted_data:
                     f.write(json.dumps(item, ensure_ascii=False) + "\n")
@@ -101,9 +101,9 @@ elif selected_model == "Ollama (Yerel - Ücretsiz)":
     
     ollama_model = st.sidebar.selectbox(
         "Ollama Model:",
-        ["llama3.1:8b", "walmart-gpt", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
+        ["walmart-gpt-expert", "walmart-gpt-advanced", "walmart-gpt-basic", "walmart-gpt", "llama3.1:8b", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
         index=0,
-        help="Kullanılacak Ollama modelini seçin"
+        help="Kullanılacak Ollama modelini seçin. Walmart modelleri özel eğitilmiştir."
     )
     
     # Model durumunu kontrol et
@@ -121,13 +121,20 @@ elif selected_model == "Ollama (Yerel - Ücretsiz)":
                     break
             
             if model_available:
-                if ollama_model == "walmart-gpt":
-                    st.sidebar.info("🎯 Walmart-GPT hazır! (Özel Model)")
+                if "walmart-gpt" in ollama_model:
+                    if "expert" in ollama_model:
+                        st.sidebar.success("🏆 Walmart-GPT Expert hazır! (Uzman Seviye)")
+                    elif "advanced" in ollama_model:
+                        st.sidebar.info("🎯 Walmart-GPT Advanced hazır! (Gelişmiş)")
+                    elif "basic" in ollama_model:
+                        st.sidebar.info("🎯 Walmart-GPT Basic hazır! (Temel)")
+                    else:
+                        st.sidebar.info("🎯 Walmart-GPT hazır! (Özel Model)")
                 else:
                     st.sidebar.info(f"🎯 {ollama_model} hazır!")
             else:
-                if ollama_model == "walmart-gpt":
-                    st.sidebar.warning("⚠️ Walmart-GPT henüz oluşturulmadı")
+                if "walmart-gpt" in ollama_model:
+                    st.sidebar.warning(f"⚠️ {ollama_model} henüz oluşturulmadı")
                 else:
                     st.sidebar.warning(f"⚠️ {ollama_model} yüklü değil")
         else:
@@ -161,8 +168,8 @@ if os.path.exists("training_data.json"):
         col_train1, col_train2 = st.sidebar.columns(2)
         
         with col_train1:
-            if st.button("🔧 Walmart Modeli Oluştur", help="Training data ile özel model oluştur"):
-                with st.spinner("Model oluşturuluyor..."):
+            if st.button("🔧 Temel Model Oluştur", help="Training data ile temel model oluştur"):
+                with st.spinner("Temel model oluşturuluyor..."):
                     import subprocess
                     result = subprocess.run(
                         ["python3", "create_walmart_model.py"],
@@ -172,11 +179,30 @@ if os.path.exists("training_data.json"):
                     )
                     
                     if result.returncode == 0:
-                        st.sidebar.success("✅ Walmart modeli oluşturuldu!")
+                        st.sidebar.success("✅ Temel model oluşturuldu!")
                     else:
                         st.sidebar.error(f"❌ Hata: {result.stderr}")
         
         with col_train2:
+            if st.button("🚀 Gelişmiş Model Oluştur", help="Optimize edilmiş veri ile gelişmiş model oluştur"):
+                with st.spinner("Gelişmiş model oluşturuluyor..."):
+                    import subprocess
+                    result = subprocess.run(
+                        ["python3", "model_optimizer.py"],
+                        cwd="/Users/mahiracan/Desktop/walmart_project_last",
+                        capture_output=True,
+                        text=True
+                    )
+                    
+                    if result.returncode == 0:
+                        st.sidebar.success("✅ Gelişmiş modeller oluşturuldu!")
+                    else:
+                        st.sidebar.error(f"❌ Hata: {result.stderr}")
+        
+        # Yeni satır - Analytics butonları
+        col_train3, col_train4 = st.sidebar.columns(2)
+        
+        with col_train3:
             if st.button("📊 Export JSONL"):
                 export_file = export_training_data_for_finetuning("jsonl")
                 if export_file:
@@ -191,6 +217,22 @@ if os.path.exists("training_data.json"):
                         file_name=export_file,
                         mime="application/jsonl"
                     )
+        
+        with col_train4:
+            if st.button("📈 Model Analytics", help="Model performansını analiz et"):
+                with st.spinner("Analytics çalıştırılıyor..."):
+                    import subprocess
+                    result = subprocess.run(
+                        ["python3", "model_analytics.py"],
+                        cwd="/Users/mahiracan/Desktop/walmart_project_last",
+                        capture_output=True,
+                        text=True
+                    )
+                    
+                    if result.returncode == 0:
+                        st.sidebar.success("✅ Analytics tamamlandı!")
+                    else:
+                        st.sidebar.error(f"❌ Hata: {result.stderr}")
         
         # Training data clear button
         if st.sidebar.button("🗑️ Veriyi Temizle"):
