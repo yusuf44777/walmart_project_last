@@ -68,5 +68,19 @@
     },
     "model_used": "Ollama (Yerel - Ücretsiz)",
     "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-21T07:32:03.256050",
+    "input": {
+      "product_name": "99 Names of Prophet Muhammad - Metal Islamic Wall Art",
+      "product_features": "The Asma Ul Nabi Muhammad PBUH is beautifully designed with Arabic calligraphy, complemented by the intricate pomegranate seed pattern. This metal wall art piece captures the timeless beauty of Prophet Muhammad's (PBUH) names, creating a spiritual ambiance in your home. The unique combination of Arabic Calligraphy and the detailed pomegranate seed design enhances its visual appeal, making it a perfect addition to any home decor. Whether you're searching for a meaningful Islamic gift or wanting to add a profound piece to your Islamic home decor, this masterpiece serves as an ideal choice.\n\nSee other Islamic Metal Wall Decor by clicking here!\n\nThe importance of Names of Muhammad (PBUH):\nThe names of Prophet Muhammad (PBUH) represent his divine qualities and spiritual significance. Reciting and reflecting on these names not only strengthens one’s connection to the Prophet (PBUH) but also fosters a sense of peace and guidance. They remind Muslims of the noble character and mission of the Prophet (PBUH), and invoke blessings and mercy upon the believer.\n\nGreat Designs from Islamic Wall Art Store:\nAt the online Islamic Wall Art Store, you'll find an impressive range of Islamic wall art designs including horizontal, vertical, square, circular, and custom shapes. Whether you're decorating a large living room, a cozy prayer room, or seeking the perfect Ramadan decor, our collection is designed to fit any space and aesthetic. Each piece combines tradition with modern elegance, ensuring that your home reflects your faith. Explore our vast selection to discover beautifully crafted Islamic art that enhances any space."
+    },
+    "output": {
+      "title": "Metal Islamic Wall Art with 99 Names of Prophet Muhammad (PBUH) in Arabic Calligraphy",
+      "key_features": "• Beautifully designed metal wall art piece\n• Features the names of Prophet Muhammad (PBUH)\n• Intricate pomegranate seed pattern design\n• Made from high-quality materials for durability\n• Perfect addition to any Islamic home decor or gift\n• Recites 99 Names of Allah and his attributes",
+      "description": "This stunning Metal Islamic Wall Art piece is a masterpiece that captures the essence of Prophet Muhammad's (PBUH) names. The beautifully designed metal art features intricate Arabic calligraphy, complemented by an elegant pomegranate seed pattern design. With its high-quality materials and durable construction, this wall decor will last for years to come. Perfect as a meaningful Islamic gift or addition to your home decor, it serves as a reminder of the Prophet's (PBUH) divine qualities and spiritual significance. The 99 Names of Allah are intricately recited on this piece, making it an ideal choice for those seeking to strengthen their connection with the Almighty. Whether you're decorating a prayer room or living space, this metal wall art will add a touch of elegance and spirituality to your home while serving as a beautiful reminder of Islamic values and traditions.<|im_end|>"
+    },
+    "model_used": "Ollama (Yerel/Cloud)",
+    "prompt_template": "walmart_product_content"
   }
 ]
