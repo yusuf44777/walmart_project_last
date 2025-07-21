@@ -36,8 +36,24 @@ def get_ollama_base_url():
 OLLAMA_BASE_URL = get_ollama_base_url()
 
 def is_local_environment():
-    """Local environment kontrolü"""
-    return OLLAMA_BASE_URL is not None
+    """Local environment kontrolü - İyileştirilmiş"""
+    # Environment variable kontrolü
+    if (os.environ.get('STREAMLIT_CLOUD_ENV') or 
+        os.environ.get('HEROKU_APP_NAME') or 
+        os.environ.get('RAILWAY_ENVIRONMENT')):
+        return False
+    
+    # Ollama URL kontrolü
+    ollama_url = get_ollama_base_url()
+    if ollama_url and "localhost" in ollama_url:
+        return True
+    
+    # Son kontrol - local Ollama servisi çalışıyor mu?
+    try:
+        response = requests.get("http://localhost:11434/api/tags", timeout=1)
+        return response.status_code == 200
+    except:
+        return False
 
 # Export fonksiyonu
 def export_training_data_for_finetuning(format_type="jsonl"):
@@ -107,8 +123,8 @@ st.subheader("AI ile profesyonel ürün içerikleri oluşturun")
 
 # Environment info
 if not is_local_environment():
-    st.info("ℹ️ **Deploy Ortamı**: Bu uygulama cloud'da çalışıyor. Sadece OpenAI ChatGPT kullanılabilir.")
-    st.warning("⚠️ **Önemli**: Ollama servisi deploy ortamında kullanılamaz. Lütfen OpenAI ChatGPT'yi seçin.")
+    st.info("ℹ️ **Deploy Ortamı**: Bu uygulama cloud'da çalışıyor.")
+    st.warning("⚠️ **Not**: Yerel Ollama kullanılamaz, ancak Cloud Ollama kurabilirsiniz.")
 else:
     st.success("💻 **Yerel Ortam**: Hem Ollama hem OpenAI ChatGPT kullanılabilir.")
 
@@ -117,13 +133,24 @@ st.sidebar.title("⚙️ Ayarlar")
 
 # Model selection
 available_models = ["OpenAI ChatGPT"]
-if is_local_environment() or ('cloud_ollama_url' in st.session_state and st.session_state['cloud_ollama_url']):
-    available_models.append("Ollama (Yerel/Cloud)")
+
+# Local Ollama kontrolü
+try:
+    local_test = requests.get("http://localhost:11434/api/tags", timeout=2)
+    if local_test.status_code == 200:
+        available_models.append("Ollama (Yerel/Cloud)")
+except:
+    pass
+
+# Cloud Ollama kontrolü
+if not is_local_environment() and 'cloud_ollama_url' in st.session_state and st.session_state['cloud_ollama_url']:
+    if "Ollama (Yerel/Cloud)" not in available_models:
+        available_models.append("Ollama (Yerel/Cloud)")
 
 selected_model = st.sidebar.selectbox(
     "🤖 AI Model Seçin:",
     available_models,
-    index=0,  # Deploy ortamında her zaman OpenAI'yı varsayılan yap
+    index=0,
     help="Kullanmak istediğiniz AI modelini seçin"
 )
 
@@ -140,62 +167,114 @@ if selected_model == "OpenAI ChatGPT":
     if api_key:
         st.sidebar.success("✅ OpenAI ChatGPT hazır!")
 
-elif selected_model == "Ollama (Yerel - Ücretsiz)":
-    if not is_local_environment():
-        st.sidebar.error("❌ Ollama sadece yerel ortamda çalışır!")
-        st.sidebar.info("💡 Deploy edilmiş uygulamada OpenAI ChatGPT kullanın.")
-        api_key = None
-        # Deploy ortamında Ollama seçiliyse otomatik olarak OpenAI'ya geç
-        st.sidebar.warning("⚠️ Otomatik olarak OpenAI ChatGPT'ye geçiliyor...")
-        selected_model = "OpenAI ChatGPT"
-        st.rerun()
-    else:
-        st.sidebar.success("✅ Ollama Hazır! (Tamamen Ücretsiz)")
+elif selected_model == "Ollama (Yerel/Cloud)":
+    # Yerel Ollama kontrolü
+    if is_local_environment():
+        st.sidebar.success("✅ Yerel Ollama Hazır! (Tamamen Ücretsiz)")
         
         ollama_model = st.sidebar.selectbox(
             "Ollama Model:",
-            ["walmart-gpt", "llama3.1:8b", "walmart-gpt-expert", "walmart-gpt-advanced", "walmart-gpt-basic", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
+            ["llama3.1:8b", "walmart-gpt", "walmart-gpt-expert", "walmart-gpt-advanced", "walmart-gpt-basic", "llama3.1:70b", "mistral:7b", "codellama:7b", "qwen2.5:7b"],
             index=0,
             help="Kullanılacak Ollama modelini seçin. Walmart modelleri özel eğitilmiştir."
         )
         
         # Model durumunu kontrol et
         try:
-            response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=2)
-            if response.status_code == 200:
-                models = response.json().get("models", [])
-                model_names = [model["name"] for model in models]
-                
-                # Model ismini kontrol et (hem tam isim hem de base isim)
-                model_available = False
-                for model_name in model_names:
-                    if ollama_model in model_name or model_name.startswith(ollama_model):
-                        model_available = True
-                        break
-                
-                if model_available:
-                    if "walmart-gpt" in ollama_model:
-                        if "expert" in ollama_model:
-                            st.sidebar.success("🏆 Walmart-GPT Expert hazır! (Uzman Seviye)")
-                        elif "advanced" in ollama_model:
-                            st.sidebar.info("🎯 Walmart-GPT Advanced hazır! (Gelişmiş)")
-                        elif "basic" in ollama_model:
-                            st.sidebar.info("🎯 Walmart-GPT Basic hazır! (Temel)")
+            if OLLAMA_BASE_URL:
+                response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=3)
+                if response.status_code == 200:
+                    models = response.json().get("models", [])
+                    model_names = [model["name"] for model in models]
+                    
+                    # Model ismini kontrol et
+                    model_available = False
+                    for model_name in model_names:
+                        if ollama_model in model_name or model_name.startswith(ollama_model.split(':')[0]):
+                            model_available = True
+                            break
+                    
+                    if model_available:
+                        if "walmart-gpt" in ollama_model:
+                            if "expert" in ollama_model:
+                                st.sidebar.success("🏆 Walmart-GPT Expert hazır! (Uzman Seviye)")
+                            elif "advanced" in ollama_model:
+                                st.sidebar.info("🎯 Walmart-GPT Advanced hazır! (Gelişmiş)")
+                            elif "basic" in ollama_model:
+                                st.sidebar.info("🎯 Walmart-GPT Basic hazır! (Temel)")
+                            else:
+                                st.sidebar.info("🎯 Walmart-GPT hazır! (Özel Model)")
                         else:
-                            st.sidebar.info("🎯 Walmart-GPT hazır! (Özel Model)")
+                            st.sidebar.info(f"🎯 {ollama_model} hazır!")
                     else:
-                        st.sidebar.info(f"🎯 {ollama_model} hazır!")
+                        if "walmart-gpt" in ollama_model:
+                            st.sidebar.warning(f"⚠️ {ollama_model} henüz oluşturulmadı")
+                            if st.sidebar.button("📥 Model İndir"):
+                                with st.spinner("Model indiriliyor..."):
+                                    import subprocess
+                                    result = subprocess.run(["ollama", "pull", ollama_model], capture_output=True, text=True)
+                                    if result.returncode == 0:
+                                        st.sidebar.success("✅ Model indirildi!")
+                                        st.rerun()
+                                    else:
+                                        st.sidebar.error("❌ Model indirilemedi")
+                        else:
+                            st.sidebar.warning(f"⚠️ {ollama_model} yüklü değil")
+                            if st.sidebar.button("📥 Model İndir"):
+                                with st.spinner("Model indiriliyor..."):
+                                    import subprocess
+                                    result = subprocess.run(["ollama", "pull", ollama_model], capture_output=True, text=True)
+                                    if result.returncode == 0:
+                                        st.sidebar.success("✅ Model indirildi!")
+                                        st.rerun()
+                                    else:
+                                        st.sidebar.error("❌ Model indirilemedi")
                 else:
-                    if "walmart-gpt" in ollama_model:
-                        st.sidebar.warning(f"⚠️ {ollama_model} henüz oluşturulmadı")
-                    else:
-                        st.sidebar.warning(f"⚠️ {ollama_model} yüklü değil")
+                    st.sidebar.error("❌ Ollama servisine bağlanamıyor")
+                    st.sidebar.info("🔧 Terminal'de çalıştırın: `brew services start ollama`")
             else:
-                st.sidebar.error("❌ Ollama servisine bağlanamıyor")
-        except:
-            st.sidebar.error("❌ Ollama çalışmıyor")
+                st.sidebar.error("❌ Ollama URL bulunamadı")
+        except Exception as e:
+            st.sidebar.error("❌ Ollama bağlantı hatası")
+            st.sidebar.info("🔧 Terminal'de çalıştırın: `ollama serve`")
         
         api_key = "ollama_local"
+    
+    # Cloud Ollama kontrolü
+    elif 'cloud_ollama_url' in st.session_state and st.session_state['cloud_ollama_url']:
+        st.sidebar.success("✅ Cloud Ollama Hazır!")
+        
+        # Cloud Ollama için model seçimi
+        try:
+            cloud_url = st.session_state['cloud_ollama_url']
+            response = requests.get(f"{cloud_url}/api/tags", timeout=5)
+            if response.status_code == 200:
+                models = response.json().get("models", [])
+                cloud_model_names = [model["name"] for model in models]
+                
+                if cloud_model_names:
+                    ollama_model = st.sidebar.selectbox(
+                        "Cloud Ollama Model:",
+                        cloud_model_names,
+                        help="Cloud'daki mevcut modeller"
+                    )
+                    st.sidebar.info(f"🌐 Cloud'da {len(cloud_model_names)} model mevcut")
+                else:
+                    st.sidebar.warning("⚠️ Cloud'da model bulunamadı")
+                    ollama_model = "llama3.1:8b"
+            else:
+                st.sidebar.error("❌ Cloud Ollama'dan model listesi alınamadı")
+                ollama_model = "llama3.1:8b"
+        except:
+            st.sidebar.error("❌ Cloud Ollama bağlantı hatası")
+            ollama_model = "llama3.1:8b"
+        
+        api_key = "cloud_ollama"
+    
+    else:
+        st.sidebar.error("❌ Ollama bulunamadı!")
+        st.sidebar.info("💡 Yerel ortamda Ollama başlatın veya Cloud Ollama URL'i girin")
+        api_key = None
 
 # Enhanced help section
 st.sidebar.markdown("---")
@@ -467,12 +546,6 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
 
 def get_ai_response(prompt, selected_model, api_key):
     """AI modellerinden yanıt al - Deploy ortamı uyumlu"""
-    # Deploy ortamında Ollama kontrolü
-    if selected_model == "Ollama (Yerel - Ücretsiz)" and not is_local_environment():
-        st.error("❌ Deploy edilmiş ortamda Ollama kullanılamaz!")
-        st.info("💡 Lütfen OpenAI ChatGPT modelini seçin.")
-        return None
-    
     if selected_model == "OpenAI ChatGPT":
         if not api_key:
             st.error("❌ OpenAI API anahtarı gerekli!")
@@ -492,7 +565,10 @@ def get_ai_response(prompt, selected_model, api_key):
         except Exception as e:
             st.error(f"OpenAI ChatGPT hatası: {str(e)}")
             return None
-    elif selected_model == "Ollama (Yerel - Ücretsiz)":
+    elif selected_model == "Ollama (Yerel/Cloud)":
+        if not api_key:
+            st.error("❌ Ollama servisi bulunamadı!")
+            return None
         return call_ollama_api(prompt, ollama_model)
     else:
         st.error("Desteklenmeyen model")
@@ -569,16 +645,14 @@ with col2:
     st.subheader("✨ Oluşturulan İçerik")
     
     if submit_button and product_name and product_features:
-        # API key kontrolü deploy ortamı için
+        # API key kontrolü
         if selected_model == "OpenAI ChatGPT" and not api_key:
             st.warning("⚠️ Lütfen OpenAI API anahtarınızı sol panelden girin.")
             st.stop()
-        elif selected_model == "Ollama (Yerel - Ücretsiz)" and not is_local_environment():
-            st.error("❌ Deploy edilmiş ortamda Ollama kullanılamaz!")
-            st.info("💡 Lütfen OpenAI ChatGPT modelini seçin.")
+        elif selected_model == "Ollama (Yerel/Cloud)" and not api_key:
+            st.error("❌ Ollama servisi bulunamadı!")
+            st.info("💡 Yerel ortamda Ollama başlatın veya Cloud Ollama URL'i girin.")
             st.stop()
-        elif not api_key and is_local_environment() and selected_model == "Ollama (Yerel - Ücretsiz)":
-            api_key = "ollama_local"  # Ollama için dummy key
         
         with st.spinner("🤖 AI içerik oluşturuyor..."):
             # Progress simulation
@@ -672,7 +746,7 @@ Now create content for the product above using this exact format. Make sure to i
                 st.code(content, language="text")
                 st.info(f"Yanıt uzunluğu: {len(content)} karakter")
                 st.info(f"Kullanılan model: {selected_model}")
-                if selected_model == "Ollama (Yerel - Ücretsiz)":
+                if selected_model == "Ollama (Yerel/Cloud)":
                     st.info(f"Ollama modeli: {ollama_model}")
             
             # İçeriği parse et - Geliştirilmiş versiyon
@@ -822,12 +896,12 @@ Now create content for the product above using this exact format. Make sure to i
                 st.info("💡 Ollama servisinin çalıştığından emin olun ve tekrar deneyin.")
     
     elif submit_button:
-        # Error messages - Deploy ortamı uyumlu
+        # Error messages
         if selected_model == "OpenAI ChatGPT" and not api_key:
             st.warning("⚠️ Lütfen OpenAI API anahtarınızı sol panelden girin.")
-        elif selected_model == "Ollama (Yerel - Ücretsiz)" and not is_local_environment():
-            st.error("❌ Deploy edilmiş ortamda Ollama kullanılamaz!")
-            st.info("💡 Lütfen OpenAI ChatGPT modelini seçin.")
+        elif selected_model == "Ollama (Yerel/Cloud)" and not api_key:
+            st.error("❌ Ollama servisi bulunamadı!")
+            st.info("💡 Yerel ortamda Ollama başlatın veya Cloud Ollama URL'i girin.")
         elif not product_name:
             st.warning("⚠️ Lütfen ürün adını girin.")
         elif not product_features:
