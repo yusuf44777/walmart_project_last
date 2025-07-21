@@ -11,10 +11,22 @@ def get_ollama_base_url():
     """Ollama base URL'ini environment'a göre belirle"""
     # Heroku, Railway, Streamlit Cloud için environment variables kontrol et
     if os.environ.get('STREAMLIT_CLOUD_ENV'):
+        # Cloud Ollama URL varsa kullan
+        cloud_url = os.environ.get('CLOUD_OLLAMA_URL')
+        if cloud_url:
+            return cloud_url
         return None  # Streamlit Cloud'da Ollama yok
     elif os.environ.get('HEROKU_APP_NAME'):
+        # Heroku'da cloud Ollama URL kontrol et
+        cloud_url = os.environ.get('CLOUD_OLLAMA_URL')
+        if cloud_url:
+            return cloud_url
         return None  # Heroku'da Ollama yok
     elif os.environ.get('RAILWAY_ENVIRONMENT'):
+        # Railway'de cloud Ollama URL kontrol et
+        cloud_url = os.environ.get('CLOUD_OLLAMA_URL')
+        if cloud_url:
+            return cloud_url
         return None  # Railway'de Ollama yok
     else:
         # Local environment
@@ -95,7 +107,8 @@ st.subheader("AI ile profesyonel ürün içerikleri oluşturun")
 
 # Environment info
 if not is_local_environment():
-    st.info("ℹ️ **Deploy Ortamı**: Bu uygulama cloud'da çalışıyor. Ollama yerel ortamda kullanılabilir, OpenAI ChatGPT önerilir.")
+    st.info("ℹ️ **Deploy Ortamı**: Bu uygulama cloud'da çalışıyor. Sadece OpenAI ChatGPT kullanılabilir.")
+    st.warning("⚠️ **Önemli**: Ollama servisi deploy ortamında kullanılamaz. Lütfen OpenAI ChatGPT'yi seçin.")
 else:
     st.success("💻 **Yerel Ortam**: Hem Ollama hem OpenAI ChatGPT kullanılabilir.")
 
@@ -103,10 +116,14 @@ else:
 st.sidebar.title("⚙️ Ayarlar")
 
 # Model selection
+available_models = ["OpenAI ChatGPT"]
+if is_local_environment() or ('cloud_ollama_url' in st.session_state and st.session_state['cloud_ollama_url']):
+    available_models.append("Ollama (Yerel/Cloud)")
+
 selected_model = st.sidebar.selectbox(
     "🤖 AI Model Seçin:",
-    ["OpenAI ChatGPT", "Ollama (Yerel - Ücretsiz)"] if is_local_environment() else ["OpenAI ChatGPT"],
-    index=1 if is_local_environment() else 0,
+    available_models,
+    index=0,  # Deploy ortamında her zaman OpenAI'yı varsayılan yap
     help="Kullanmak istediğiniz AI modelini seçin"
 )
 
@@ -128,6 +145,10 @@ elif selected_model == "Ollama (Yerel - Ücretsiz)":
         st.sidebar.error("❌ Ollama sadece yerel ortamda çalışır!")
         st.sidebar.info("💡 Deploy edilmiş uygulamada OpenAI ChatGPT kullanın.")
         api_key = None
+        # Deploy ortamında Ollama seçiliyse otomatik olarak OpenAI'ya geç
+        st.sidebar.warning("⚠️ Otomatik olarak OpenAI ChatGPT'ye geçiliyor...")
+        selected_model = "OpenAI ChatGPT"
+        st.rerun()
     else:
         st.sidebar.success("✅ Ollama Hazır! (Tamamen Ücretsiz)")
         
@@ -183,8 +204,51 @@ if is_local_environment():
     st.sidebar.info("• Tamamen ücretsiz\n• Yerel çalışır (gizlilik)\n• Çok hızlı\n• Veri güvenliği")
 else:
     st.sidebar.subheader("☁️ Deploy Ortamı")
-    st.sidebar.warning("Bu uygulama deploy edilmiş durumda. Ollama yerel ortamda çalışır.")
-    st.sidebar.info("💡 OpenAI ChatGPT kullanarak devam edebilirsiniz.")
+    st.sidebar.warning("Bu uygulama deploy edilmiş durumda.")
+    st.sidebar.info("💡 OpenAI ChatGPT kullanın veya Cloud Ollama kurabilirsiniz.")
+    
+    # Cloud Ollama configuration
+    st.sidebar.markdown("### 🌐 Cloud Ollama (Opsiyonel)")
+    cloud_ollama_url = st.sidebar.text_input(
+        "Cloud Ollama URL:",
+        placeholder="https://your-cloud-ollama.com",
+        help="Google Colab, RunPod veya kendi sunucunuzdaki Ollama URL'i"
+    )
+    
+    if cloud_ollama_url:
+        # Test connection
+        try:
+            test_response = requests.get(f"{cloud_ollama_url}/api/tags", timeout=5)
+            if test_response.status_code == 200:
+                st.sidebar.success("✅ Cloud Ollama bağlantısı başarılı!")
+                # Update global URL for this session
+                st.session_state['cloud_ollama_url'] = cloud_ollama_url
+                
+                # Show available models
+                models = test_response.json().get("models", [])
+                if models:
+                    model_names = [model["name"] for model in models]
+                    st.sidebar.info(f"� Mevcut modeller: {', '.join(model_names[:3])}")
+            else:
+                st.sidebar.error("❌ Cloud Ollama'ya bağlanamıyor")
+        except Exception as e:
+            st.sidebar.error(f"❌ Bağlantı hatası: {str(e)[:50]}...")
+    
+    st.sidebar.markdown("### 📚 Cloud Ollama Kurulum")
+    with st.sidebar.expander("🚀 Nasıl Kurarım?"):
+        st.write("""
+        **Ücretsiz Seçenekler:**
+        1. **Google Colab** (15GB RAM, GPU)
+        2. **Kaggle Notebooks** (13GB RAM)
+        3. **HuggingFace Spaces** (16GB RAM)
+        
+        **Uygun Fiyatlı:**
+        1. **RunPod** ($0.20/saat)
+        2. **Vast.ai** ($0.10/saat)
+        3. **DigitalOcean** ($5/ay)
+        
+        Detaylar için cloud_ollama_setup.md dosyasını inceleyin.
+        """)
 
 # Fine-tuning data collection
 st.sidebar.markdown("---")
@@ -306,12 +370,20 @@ else:
 
 # AI Model Functions
 def call_ollama_api(prompt, model="llama3.1:8b"):
-    """Ollama API çağrısı - Geliştirilmiş versiyon"""
+    """Ollama API çağrısı - Cloud desteği ile geliştirilmiş versiyon"""
     
-    # Local environment kontrolü
-    if not is_local_environment():
-        st.error("❌ Ollama sadece yerel ortamda çalışır!")
-        st.info("💡 Deploy edilmiş uygulamada OpenAI ChatGPT kullanın.")
+    # Cloud Ollama URL varsa kullan
+    ollama_url = OLLAMA_BASE_URL
+    if not is_local_environment() and 'cloud_ollama_url' in st.session_state:
+        ollama_url = st.session_state['cloud_ollama_url']
+    
+    # URL kontrolü
+    if not ollama_url:
+        st.error("❌ Ollama servisi bulunamadı!")
+        if not is_local_environment():
+            st.info("💡 Cloud Ollama URL'inizi yan panelden girin veya OpenAI ChatGPT kullanın.")
+        else:
+            st.info("💡 Local ortamda Ollama'yı başlatın: `brew services start ollama`")
         return None
     
     try:
@@ -351,7 +423,7 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
             model_name = f"{model}:latest"
         
         response = requests.post(
-            f"{OLLAMA_BASE_URL}/api/generate",
+            f"{ollama_url}/api/generate",
             json={
                 "model": model_name,
                 "prompt": prompt,
@@ -365,7 +437,10 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
             result = response.json()["response"]
             
             # Debug için yanıt bilgileri
-            st.info(f"✅ Ollama yanıtı alındı ({len(result)} karakter) - Model: {model_name}")
+            if is_local_environment():
+                st.info(f"✅ Ollama yanıtı alındı ({len(result)} karakter) - Model: {model_name}")
+            else:
+                st.info(f"✅ Cloud Ollama yanıtı alındı ({len(result)} karakter) - Model: {model_name}")
             
             return result
         else:
@@ -375,8 +450,12 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
             return None
             
     except requests.exceptions.ConnectionError:
-        st.error("❌ Ollama servisine bağlanamıyor!")
-        st.info("🔧 Çözüm: `brew services start ollama` komutu ile Ollama'yı başlatın")
+        if is_local_environment():
+            st.error("❌ Ollama servisine bağlanamıyor!")
+            st.info("🔧 Çözüm: `brew services start ollama` komutu ile Ollama'yı başlatın")
+        else:
+            st.error("❌ Cloud Ollama servisine bağlanamıyor!")
+            st.info("💡 Cloud Ollama URL'inizi kontrol edin veya OpenAI ChatGPT kullanın")
         return None
     except requests.exceptions.Timeout:
         st.error("⏱️ Ollama yanıt verme süresi aşıldı")
@@ -387,8 +466,17 @@ def call_ollama_api(prompt, model="llama3.1:8b"):
         return None
 
 def get_ai_response(prompt, selected_model, api_key):
-    """AI modellerinden yanıt al - Ollama odaklı"""
+    """AI modellerinden yanıt al - Deploy ortamı uyumlu"""
+    # Deploy ortamında Ollama kontrolü
+    if selected_model == "Ollama (Yerel - Ücretsiz)" and not is_local_environment():
+        st.error("❌ Deploy edilmiş ortamda Ollama kullanılamaz!")
+        st.info("💡 Lütfen OpenAI ChatGPT modelini seçin.")
+        return None
+    
     if selected_model == "OpenAI ChatGPT":
+        if not api_key:
+            st.error("❌ OpenAI API anahtarı gerekli!")
+            return None
         try:
             client = openai.OpenAI(api_key=api_key)
             response = client.chat.completions.create(
@@ -480,7 +568,18 @@ with col1:
 with col2:
     st.subheader("✨ Oluşturulan İçerik")
     
-    if submit_button and api_key and product_name and product_features:
+    if submit_button and product_name and product_features:
+        # API key kontrolü deploy ortamı için
+        if selected_model == "OpenAI ChatGPT" and not api_key:
+            st.warning("⚠️ Lütfen OpenAI API anahtarınızı sol panelden girin.")
+            st.stop()
+        elif selected_model == "Ollama (Yerel - Ücretsiz)" and not is_local_environment():
+            st.error("❌ Deploy edilmiş ortamda Ollama kullanılamaz!")
+            st.info("💡 Lütfen OpenAI ChatGPT modelini seçin.")
+            st.stop()
+        elif not api_key and is_local_environment() and selected_model == "Ollama (Yerel - Ücretsiz)":
+            api_key = "ollama_local"  # Ollama için dummy key
+        
         with st.spinner("🤖 AI içerik oluşturuyor..."):
             # Progress simulation
             progress_bar = st.progress(0)
@@ -723,9 +822,12 @@ Now create content for the product above using this exact format. Make sure to i
                 st.info("💡 Ollama servisinin çalıştığından emin olun ve tekrar deneyin.")
     
     elif submit_button:
-        # Error messages
-        if not api_key:
-            st.warning(f"⚠️ Lütfen {selected_model} API anahtarınızı sol panelden girin.")
+        # Error messages - Deploy ortamı uyumlu
+        if selected_model == "OpenAI ChatGPT" and not api_key:
+            st.warning("⚠️ Lütfen OpenAI API anahtarınızı sol panelden girin.")
+        elif selected_model == "Ollama (Yerel - Ücretsiz)" and not is_local_environment():
+            st.error("❌ Deploy edilmiş ortamda Ollama kullanılamaz!")
+            st.info("💡 Lütfen OpenAI ChatGPT modelini seçin.")
         elif not product_name:
             st.warning("⚠️ Lütfen ürün adını girin.")
         elif not product_features:
