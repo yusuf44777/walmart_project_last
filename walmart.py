@@ -553,7 +553,7 @@ def get_ai_response(prompt, selected_model, api_key):
         try:
             client = openai.OpenAI(api_key=api_key)
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4.1-2025-04-14",
                 messages=[
                     {"role": "system", "content": "You are a professional content writer for Walmart.com product listings."},
                     {"role": "user", "content": prompt}

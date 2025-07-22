@@ -82,5 +82,75 @@
     },
     "model_used": "Ollama (Yerel/Cloud)",
     "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-22T14:50:39.470210",
+    "input": {
+      "product_name": "Travertine Oval Tray Decorative Vanity Organizer for Jewelry, Perfume & Candles Bathroom, Dresser & Kitchen Countertop Storage (Silver)",
+      "product_features": "Natural Turkish Travertine Stone: Crafted from authentic travertine, each tray features unique patterns and natural elegance.\nMulti-Purpose Organizer: Ideal for storing jewelry, perfumes, candles, and small items on bathroom counters, dressers, or kitchen surfaces.\nPerfect Size: Compact dimensions of 29.5 x 16.5 x 2 cm fit easily into any space without overcrowding.\nDurable & Easy to Clean: Smooth surface resists stains and is simple to wipe clean, ensuring long-lasting beauty.\nElegant Home Décor: Adds a stylish, organic touch to any room while keeping your essentials organized and accessible."
+    },
+    "output": {
+      "title": "Travertine Oval Tray Decorative Vanity Organizer with Natural Turkish Stone & Silver Finish",
+      "key_features": "• Crafted from authentic natural travertine stone for a unique look\n• Multi-purpose organizer ideal for bathroom counters, dressers, and kitchen surfaces\n• Compact dimensions (29.5 x 16.5 x 2 cm) fit easily into any space\n• Durable smooth surface resists stains and is easy to clean",
+      "description": "Add a touch of natural elegance to your home with the Travertine Oval Tray Decorative Vanity Organizer from our collection. Crafted from authentic Turkish travertine stone, each tray features unique patterns that will add an organic charm to any room. This multi-purpose organizer is perfect for storing jewelry, perfumes, candles, and small items on bathroom counters, dressers, or kitchen surfaces. Its compact dimensions (29.5 x 16.5 x 2 cm) make it easy to fit into even the smallest spaces without overcrowding your countertops. The durable smooth surface resists stains and is simple to wipe clean, ensuring long-lasting beauty. Whether you're looking for a stylish addition to your bathroom or kitchen decor, this travertine oval tray will keep your essentials organized while adding an elegant touch to any room in your home. Its versatility makes it perfect as a gift item too! With its natural stone finish and silver accents, this organizer is sure to complement any décor style. Get yours today and experience the beauty of authentic Turkish travertine stone for yourself! |im_end|>"
+    },
+    "model_used": "Ollama (Yerel/Cloud)",
+    "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-22T14:51:16.261901",
+    "input": {
+      "product_name": "Travertine Oval Tray Decorative Vanity Organizer for Jewelry, Perfume & Candles Bathroom, Dresser & Kitchen Countertop Storage (Silver)",
+      "product_features": "Natural Turkish Travertine Stone: Crafted from authentic travertine, each tray features unique patterns and natural elegance.\nMulti-Purpose Organizer: Ideal for storing jewelry, perfumes, candles, and small items on bathroom counters, dressers, or kitchen surfaces.\nPerfect Size: Compact dimensions of 29.5 x 16.5 x 2 cm fit easily into any space without overcrowding.\nDurable & Easy to Clean: Smooth surface resists stains and is simple to wipe clean, ensuring long-lasting beauty.\nElegant Home Décor: Adds a stylish, organic touch to any room while keeping your essentials organized and accessible."
+    },
+    "output": {
+      "title": "Travertine Oval Tray Decorative Vanity Organizer with Natural Stone & Silver Finish",
+      "key_features": "• Made from authentic Turkish travertine stone for a unique natural look\n• Multi-purpose organizer ideal for jewelry, perfumes, candles and small items\n• Compact dimensions fit easily into any space without overcrowding\n• Durable smooth surface resists stains and is easy to clean\n• Elegant home decor adds organic touch while keeping essentials organized",
+      "description": "Elevate your bathroom or kitchen with the Travertine Oval Tray Decorative Vanity Organizer. Crafted from authentic Turkish travertine stone, each tray features unique patterns and natural elegance that will add a stylish touch to any room. This multi-purpose organizer is perfect for storing jewelry, perfumes, candles, and small items on countertops, dressers or kitchen surfaces. Its compact dimensions fit easily into tight spaces without overcrowding your space. The durable smooth surface resists stains and is simple to wipe clean, ensuring long-lasting beauty that will withstand the test of time. Perfect as a decorative vanity organizer for bathroom storage or countertop decor in kitchens, this elegant home accessory brings an organic touch while keeping essentials organized and accessible. Whether you're looking to add some natural charm to your space or simply need more storage solutions, this travertine oval tray is sure to impress with its unique beauty and functionality. With a silver finish that complements any décor style, it's the perfect addition to any room in your home. Order now and experience the difference of authentic Turkish travertine stone craftsmanship!"
+    },
+    "model_used": "Ollama (Yerel/Cloud)",
+    "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-22T14:52:38.696324",
+    "input": {
+      "product_name": "Travertine Oval Tray Decorative Vanity Organizer for Jewelry, Perfume & Candles Bathroom, Dresser & Kitchen Countertop Storage (Silver)",
+      "product_features": "Natural Turkish Travertine Stone: Crafted from authentic travertine, each tray features unique patterns and natural elegance.\nMulti-Purpose Organizer: Ideal for storing jewelry, perfumes, candles, and small items on bathroom counters, dressers, or kitchen surfaces.\nPerfect Size: Compact dimensions of 29.5 x 16.5 x 2 cm fit easily into any space without overcrowding.\nDurable & Easy to Clean: Smooth surface resists stains and is simple to wipe clean, ensuring long-lasting beauty.\nElegant Home Décor: Adds a stylish, organic touch to any room while keeping your essentials organized and accessible."
+    },
+    "output": {
+      "title": "** Travertine Oval Tray Decorative Vanity Organizer with Natural Turkish Stone (Silver)",
+      "key_features": "**\n• Made from authentic travertine stone for a unique pattern\n• Multi-purpose organizer ideal for jewelry, perfumes, candles, and small items\n• Compact dimensions fit easily into any space",
+      "description": "** Elevate your home decor with the Travertine Oval Tray Decorative Vanity Organizer. Crafted from genuine Turkish travertine stone, each piece features its own natural elegance and unique pattern. This multi-purpose organizer is perfect for storing jewelry, perfumes, candles, and small items on bathroom counters, dressers, or kitchen surfaces. The compact dimensions of 29.5 x 16.5 x 2 cm make it easy to fit into any space without overcrowding. Plus, the smooth surface resists stains and is simple to wipe clean for long-lasting beauty. Add a touch of organic style to your home while keeping essentials organized and accessible with this beautiful travertine tray organizer."
+    },
+    "model_used": "Ollama (Yerel/Cloud)",
+    "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-22T16:16:55.464960",
+    "input": {
+      "product_name": "Travertine Oval Tray Decorative Vanity Organizer for Jewelry, Perfume & Candles Bathroom, Dresser & Kitchen Countertop Storage (Silver)",
+      "product_features": "Natural Turkish Travertine Stone: Crafted from authentic travertine, each tray features unique patterns and natural elegance.\nMulti-Purpose Organizer: Ideal for storing jewelry, perfumes, candles, and small items on bathroom counters, dressers, or kitchen surfaces.\nPerfect Size: Compact dimensions of 29.5 x 16.5 x 2 cm fit easily into any space without overcrowding.\nDurable & Easy to Clean: Smooth surface resists stains and is simple to wipe clean, ensuring long-lasting beauty.\nElegant Home Décor: Adds a stylish, organic touch to any room while keeping your essentials organized and accessible."
+    },
+    "output": {
+      "title": "\"Travertine Oval Tray - Natural Turkish Stone Vanity Organizer for Jewelry, Perfume & Candles - Silver\"",
+      "key_features": "• Crafted from authentic Turkish Travertine Stone with unique patterns\n• Ideal multi-purpose organizer for jewelry, perfumes, candles, and small items\n• Compact size of 29.5 x 16.5 x 2 cm, perfect for any space\n• Easy-to-clean, stain-resistant smooth surface\n• Adds a stylish touch to any room while organizing essentials",
+      "description": "Make a statement in any room with the Travertine Oval Tray, crafted from natural Turkish stone. This elegant vanity organizer in silver not only serves as a stylish piece of home décor but also helps you keep your space neat and tidy. The unique patterns on every tray testify to its authenticity and bring a touch of natural elegance to your bathroom counter, dresser, or kitchen surface. From jewelry and perfumes to candles and other small items, this multi-purpose tray is the perfect solution for organizing your essentials. Despite its compact dimensions of 29.5 x 16.5 x 2 cm, it provides ample space without overcrowding your room. The smooth surface of the tray is not just aesthetically satisfying but also functional, resisting stains and easy to wipe clean, thereby ensuring long-lasting beauty. Whether you're looking to declutter your space or enhance your room's style, the Travertine Oval Tray is the perfect choice."
+    },
+    "model_used": "OpenAI ChatGPT",
+    "prompt_template": "walmart_product_content"
+  },
+  {
+    "timestamp": "2025-07-22T16:19:52.438165",
+    "input": {
+      "product_name": "Travertine Oval Tray Decorative Vanity Organizer for Jewelry, Perfume & Candles Bathroom, Dresser & Kitchen Countertop Storage (Silver)",
+      "product_features": "Natural Turkish Travertine Stone: Crafted from authentic travertine, each tray features unique patterns and natural elegance.\nMulti-Purpose Organizer: Ideal for storing jewelry, perfumes, candles, and small items on bathroom counters, dressers, or kitchen surfaces.\nPerfect Size: Compact dimensions of 29.5 x 16.5 x 2 cm fit easily into any space without overcrowding.\nDurable & Easy to Clean: Smooth surface resists stains and is simple to wipe clean, ensuring long-lasting beauty.\nElegant Home Décor: Adds a stylish, organic touch to any room while keeping your essentials organized and accessible.\nColor Options: Silver, Travertine, Red\nFigure Options: Rectangle, Oval, Round"
+    },
+    "output": {
+      "title": "Travertine Oval Tray Vanity Organizer for Jewelry, Perfume & Candles - Silver Finish, Natural Stone Countertop Storage",
+      "key_features": "• Crafted from authentic Turkish Travertine Stone with unique patterns\n• Multi-purpose organizer for jewelry, perfumes, candles and small items\n• Perfect size for bathroom counters, dressers, or kitchen surfaces\n• Smooth, stain-resistant surface for easy cleaning\n• Enhances room décor while providing practical storage\n• Available in Silver, Travertine, and Red color options\n• Comes in Rectangle, Oval, and Round figure options",
+      "description": "Add a touch of natural elegance to your home with this Travertine Oval Tray Vanity Organizer. Crafted from authentic Turkish Travertine Stone, each tray showcases unique patterns and an inherent sophistication. This multi-purpose organizer serves as an ideal storage solution for your jewelry, perfumes, candles, and other small items. Its compact dimensions of 29.5 x 16.5 x 2 cm make it a perfect fit for bathroom counters, dressers, or kitchen surfaces without causing overcrowding. The smooth, stain-resistant surface ensures easy cleaning and long-lasting beauty. Whether you are looking for a practical storage solution or a stylish accent piece, this vanity organizer serves both purposes efficiently. Available in Silver, Travertine, and Red color options and Rectangle, Oval, and Round figure options, you can choose the one that best suits your décor and personal style. Enhance the organization and aesthetics of your space with this stunning Travertine Oval Tray Vanity Organizer."
+    },
+    "model_used": "OpenAI ChatGPT",
+    "prompt_template": "walmart_product_content"
   }
 ]
