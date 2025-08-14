@@ -1,0 +1,10 @@
+{
+  "id": "walmart-wiki",
+  "name": "Walmart AI Content Generator Wiki",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Kurumsal wiki sistemi - Walmart AI Content Generator projesi dokümantasyonu",
+  "author": "Development Team",
+  "authorUrl": "https://github.com/yusuf44777/walmart_project_last",
+  "isDesktopOnly": false
+}

@@ -1,0 +1,82 @@
+name: Deploy Wiki to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'wiki/**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          npm install -g @marp-team/marp-cli
+          npm install -g markdown-to-html
+          
+      - name: Convert Markdown to HTML
+        run: |
+          mkdir -p public
+          cp -r wiki/assets public/ 2>/dev/null || true
+          
+          # Ana sayfayı index.html olarak kopyala
+          pandoc wiki/README.md -o public/index.html --standalone --template=github --metadata title="Walmart AI Wiki"
+          
+          # Tüm markdown dosyalarını HTML'e çevir
+          for file in wiki/*.md; do
+            if [[ "$file" != "wiki/README.md" ]]; then
+              filename=$(basename "$file" .md)
+              pandoc "$file" -o "public/${filename}.html" --standalone --template=github --metadata title="$filename"
+            fi
+          done
+          
+          # Navigation menüsü ekle
+          cat > public/nav.html << 'EOF'
+          <nav style="background: #f8f9fa; padding: 10px; margin-bottom: 20px; border-radius: 5px;">
+            <a href="index.html">🏠 Ana Sayfa</a> |
+            <a href="Ana%20Sayfa.html">📚 Wiki Ana</a> |
+            <a href="Hızlı%20Başlangıç.html">⚡ Hızlı Başlangıç</a> |
+            <a href="Kullanım%20Kılavuzu.html">📖 Kullanım Kılavuzu</a> |
+            <a href="SSS.html">❓ SSS</a>
+          </nav>
+          EOF
+          
+          # Her HTML dosyasına navigation ekle
+          for htmlfile in public/*.html; do
+            if [[ "$htmlfile" != "public/nav.html" ]]; then
+              sed -i '/<body[^>]*>/r public/nav.html' "$htmlfile"
+            fi
+          done
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,39 @@
+{
+  "plugins": [
+    "obsidian-git",
+    "templater-obsidian",
+    "obsidian-admonition",
+    "dataview",
+    "obsidian-kanban",
+    "table-editor-obsidian"
+  ],
+  "enabledPlugins": [
+    "file-explorer",
+    "global-search",
+    "switcher",
+    "graph",
+    "backlink",
+    "outgoing-links",
+    "tag-pane",
+    "page-preview",
+    "starred",
+    "markdown-importer",
+    "zk-prefixer",
+    "random-note",
+    "outline",
+    "word-count",
+    "open-with-default-app",
+    "file-recovery"
+  ],
+  "newFileLocation": "folder",
+  "newFileFolderPath": ".",
+  "attachmentFolderPath": "./assets",
+  "useMarkdownLinks": true,
+  "showLineNumber": true,
+  "foldHeading": true,
+  "foldIndent": true,
+  "showFrontmatter": false,
+  "alwaysUpdateLinks": true,
+  "strictLineBreaks": false,
+  "defaultViewMode": "preview"
+}
